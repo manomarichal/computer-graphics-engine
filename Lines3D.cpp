@@ -64,6 +64,27 @@ const std::vector<Vector3D> & Lines3D::getPoints() const {
     return points;
 }
 
-Matrix Lines3D::eyePointTrans(const Vector3D &eyepoint) {
+void Lines3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r) {
+    r = sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
+    theta = std::atan2(point.y, point.x);
+    phi = std::acos(r);
+}
 
+
+Matrix Lines3D::eyePointTrans(const Vector3D &eyepoint) {
+    double theta,phi,r;
+    toPolar(eyepoint,theta,phi,r);
+    Vector3D v = Vector3D::vector(0,0,-r);
+    Matrix m;
+    translateMatrix(m,v);
+    rotateAroundZ(m, -M_PI/2 - theta);
+    rotateAroundX(m, phi);
+    return m;
+}
+
+Point2D Lines3D::doProjection(const Vector3D &point, const double d) {
+    Point2D newPoint;
+    newPoint.x = (d*point.x) / (-1*point.z);
+    newPoint.y = (d*point.y) / (-1*point.z);
+    return newPoint;
 }

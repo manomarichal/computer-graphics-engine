@@ -14,6 +14,7 @@
 #include <forward_list>
 #include "vector3d.h"
 #include "ini_configuration.h"
+#include "Lines2D.h"
 
 class Lines3D {
 private:
@@ -24,24 +25,6 @@ private:
     struct Face {
         std::vector<int> pointIndexes;
     };
-
-    struct Color {
-        double red, green, blue;
-    };
-
-    struct Line2D {
-        Point3D x, y, z;
-        Color color;
-    };
-
-
-    inline int roundToInt(double d){
-        return static_cast<int>(std::round(d));
-    }
-
-    inline double convertToRad(double a) {
-        return ((a * M_PI) / 180.0);
-    }
 
     Color color;
     std::vector<Vector3D> points;
@@ -60,11 +43,15 @@ public:
 
     void scaleMatrix(Matrix &m, const double scale);
 
-    void translateMatrix(Matrix &m);
+    void translateMatrix(Matrix &m, const Vector3D &v);
 
     void applyTransformations(Lines3D &f, const Matrix &m);
 
     Matrix eyePointTrans(const Vector3D &eyepoint);
+
+    void toPolar(const Vector3D &point, double &theta, double &phi, double &r);
+
+    Point2D doProjection(const Vector3D &point, const double d);
 };
 
 typedef std::forward_list<Lines3D> Figures3D;

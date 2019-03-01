@@ -15,37 +15,33 @@
 #include <cmath>
 #include <stack>
 
+struct Point2D {
+    double x,y;
+};
 
+struct Color {
+    double red, green, blue;
+};
 
+struct Line2D {
+    Point2D p1;
+    Point2D p2;
+    Color color;
+};
+
+typedef std::forward_list<Line2D> listWithLines;
+
+inline int roundToInt(double d){
+    return static_cast<int>(std::round(d));
+}
+
+inline double convertToRad(double a) {
+    return ((a * M_PI) / 180.0);
+}
 
 
 class Lines2D {
 private:
-    struct Point2D {
-        double x,y;
-
-    };
-
-    struct Color {
-        double red, green, blue;
-    };
-
-    struct Line2D {
-        Point2D p1;
-        Point2D p2;
-        Color color;
-    };
-
-    typedef std::forward_list<Line2D> listWithLines;
-
-    inline int roundToInt(double d){
-        return static_cast<int>(std::round(d));
-    }
-
-    inline double convertToRad(double a) {
-        return ((a * M_PI) / 180.0);
-    }
-
     LParser::LSystem2D system;
     std::vector<double> backgroundcolor;
     std::vector<double> color;
