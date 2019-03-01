@@ -16,7 +16,7 @@
 #include "ini_configuration.h"
 #include "Lines2D.h"
 
-class Lines3D {
+class Figure3D {
 private:
     struct Point3D {
         double x,y,z;
@@ -33,7 +33,7 @@ private:
 public:
     const std::vector<Vector3D>& getPoints() const;
 
-    Lines3D(ini::Configuration &conf);
+    Figure3D() = default;
 
     void rotateAroundX(Matrix &m, const double angle);
 
@@ -45,7 +45,7 @@ public:
 
     void translateMatrix(Matrix &m, const Vector3D &v);
 
-    void applyTransformations(Lines3D &f, const Matrix &m);
+    void applyTransformations(Figure3D &f, const Matrix &m);
 
     Matrix eyePointTrans(const Vector3D &eyepoint);
 
@@ -54,5 +54,11 @@ public:
     Point2D doProjection(const Vector3D &point, const double d);
 };
 
-typedef std::forward_list<Lines3D> Figures3D;
+typedef std::forward_list<Figure3D> Figures3D;
+
+class Wireframe {
+public:
+    Wireframe(const ini::Configuration &conf);
+
+};
 #endif //FUCKINGWERKCG_LINES3D_H

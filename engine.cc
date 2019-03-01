@@ -1,6 +1,7 @@
 #include "easy_image.h"
 #include "ini_configuration.h"
 #include "Lines2D.h"
+#include "Lines3D.h"
 
 
 #include <fstream>
@@ -16,6 +17,10 @@ img::EasyImage generate_image(const ini::Configuration &conf) {
     if (type == "2DLSystem") {
         Lines2D lines(conf);
         return lines.drawLSystem2D();
+    }
+    if (type == "Wireframe") {
+        Wireframe wireFrame(conf);
+         //return wireFrame.drawWireFrame();
     }
 };
 
