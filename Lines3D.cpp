@@ -45,15 +45,22 @@ void Figure3D::scaleMatrix(Matrix &m, const double scale) {
 
 void Figure3D::translateMatrix(Matrix &m, const Vector3D &v){
     Matrix s;
-    s(1,4) = v.x;
-    s(2,4) = v.y;
-    s(3,4) = v.z;
+    s(4,1) = v.x;
+    s(4,2) = v.y;
+    s(4,3) = v.z;
     m *= s;
 
 }
 
 void Figure3D::applyTransformations(Figure3D &f, const Matrix &m) {
-    for (auto p:f.getPoints()) p *= m;
+    for (auto p:f.getPoints()) {
+        std::cout << "normal" << std::endl;
+        std::cout << p.x << "|" << p.y << std::endl;
+        std::cout << "transformations" << std::endl;
+        p = p * m;
+        std::cout << p.x << "|" << p.y << std::endl;
+    }
+    std::cout << "all points have been calculated" << std::endl;
 }
 
 const std::vector<Vector3D> & Figure3D::getPoints() const {
@@ -62,8 +69,8 @@ const std::vector<Vector3D> & Figure3D::getPoints() const {
 
 void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r) {
     r = sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
-    theta = std::atan2(point.y, point.x);
-    phi = std::acos(r);
+    theta = std::atan(point.y/point.x);
+    phi = std::acos(point.z/r);
 }
 
 
@@ -72,18 +79,21 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     toPolar(eyepoint,theta,phi,r);
     Vector3D v = Vector3D::vector(0,0,-r);
     Matrix m;
-    translateMatrix(m,v);
-    rotateAroundZ(m, -M_PI/2 - theta);
     rotateAroundX(m, phi);
+    m.print(std::cout);
+    rotateAroundZ(m, -M_PI/2 - theta);
+    m.print(std::cout);
+    translateMatrix(m,v);
+    m.print(std::cout);
     return m;
 }
 
 Point2D Figure3D::doProjection(const Vector3D &point, const double d) {
     Point2D newPoint;
-    if (point.z != 0) {
-        newPoint.x = (d*point.x) / (-1*point.z);
-        newPoint.y = (d*point.y) / (-1*point.z);
-    }
+    if (point.z !=0)
+    newPoint.x = (d*point.x) / (-1*point.z);
+    newPoint.y = (d*point.y) / (-1*point.z);
+
     return newPoint;
 }
 
@@ -99,12 +109,12 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
         rotateX = conf[name]["rotateX"].as_double_or_die();
         rotateY = conf[name]["rotateY"].as_double_or_die();
         rotateZ = conf[name]["rotateZ"].as_double_or_die();
-        center.point(conf[name]["center"].as_double_tuple_or_die()[0],
-                   conf[name]["center"].as_double_tuple_or_die()[1],
-                   conf[name]["center"].as_double_tuple_or_die()[2]);
-        eye.point(conf["General"]["eye"].as_double_tuple_or_die()[0],
-                     conf["General"]["eye"].as_double_tuple_or_die()[1],
-                     conf["General"]["eye"].as_double_tuple_or_die()[2]);
+        center = Vector3D::point(conf[name]["center"].as_double_tuple_or_die()[0],
+                                 conf[name]["center"].as_double_tuple_or_die()[1],
+                                 conf[name]["center"].as_double_tuple_or_die()[2]);
+        eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                              conf["General"]["eye"].as_double_tuple_or_die()[1],
+                              conf["General"]["eye"].as_double_tuple_or_die()[2]);
         scale = conf[name]["scale"].as_double_or_die();
         nrOfPoints = conf[name]["nrPoints"].as_int_or_die();
         nrOfLines = conf[name]["nrLines"].as_int_or_die();
@@ -112,27 +122,32 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
         // read in points
         for (int k=0;k<nrOfPoints;k++) {
             // for each line
-            Vector3D temp;
-            temp.x = conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[0];
-            temp.y = conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1];
-            temp.z = conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2];
-            //std::cout << temp.x << "|" << temp.y << "|" << temp.z <<std::endl;
+            Vector3D temp = Vector3D::point(conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[0],
+                                   conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1],
+                                   conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2]);
+            temp.print(std::cout);
+            std::cout <<std::endl;
             points.emplace_back(temp);
             //std::cout << k << std::endl;
         }
 
         // generate transformation matrix
         Matrix m;
+        m*=eyePointTrans(eye);
+        std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
         scaleMatrix(m, scale);
+        std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundX(m, rotateX);
+        std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundY(m, rotateY);
+        std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundZ(m, rotateZ);
+        std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
         translateMatrix(m, center);
-        m*eyePointTrans(eye);
+        std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
         applyTransformations(*this, m);
         // apply transformations on points
         for (Vector3D &point:points) {
-            std::cout << doProjection(point, 1).x << "|" << doProjection(point, 1).y << std::endl;
             points2D.emplace_back(doProjection(point, 1));
         }
 
