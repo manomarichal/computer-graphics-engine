@@ -13,6 +13,7 @@
 #include <cmath>
 #include <forward_list>
 #include "vector3d.h"
+#include "easy_image.h"
 #include "ini_configuration.h"
 #include "Lines2D.h"
 
@@ -57,8 +58,10 @@ public:
 typedef std::forward_list<Figure3D> Figures3D;
 
 class Wireframe {
+    Color backgroundcolor;
+    std::vector<double> eye;
+    int imageSize;
 public:
-    Wireframe(const ini::Configuration &conf);
-
+    img::EasyImage drawWireFrame(const ini::Configuration &conf);
 };
 #endif //FUCKINGWERKCG_LINES3D_H

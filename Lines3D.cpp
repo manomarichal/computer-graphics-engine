@@ -85,6 +85,9 @@ Point2D Figure3D::doProjection(const Vector3D &point, const double d) {
     return newPoint;
 }
 
-Wireframe::Wireframe(const ini::Configuration &conf) {
-
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
+    // read information from configuration file
+    imageSize = conf["General"]["size"].as_int_or_die();
+    backgroundcolor.ini(conf["2DLSystem"]["backgroundcolor"].as_double_tuple_or_die());
+    eye = conf["General"]["eye"].as_double_tuple_or_die();
 }

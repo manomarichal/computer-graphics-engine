@@ -21,6 +21,17 @@ struct Point2D {
 
 struct Color {
     double red, green, blue;
+    void ini(const std::vector<double> &vec) {
+        red = vec[0];
+        blue = vec[2];
+        green = vec[1];
+    }
+
+    void iniDouble(const double &r, const double &g, const double &b) {
+        red = r;
+        blue = b;
+        green = g;
+    }
 };
 
 struct Line2D {
@@ -43,8 +54,7 @@ inline double convertToRad(double a) {
 class Lines2D {
 private:
     LParser::LSystem2D system;
-    std::vector<double> backgroundcolor;
-    std::vector<double> color;
+    Color backgroundcolor, color;
     Point2D prev, cur;
     int recursionDepth=0; int maxRecursionDepth;
     double currentAngle;
