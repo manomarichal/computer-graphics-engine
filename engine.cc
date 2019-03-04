@@ -19,8 +19,8 @@ img::EasyImage generate_image(const ini::Configuration &conf) {
         return lines.drawLSystem2D();
     }
     if (type == "Wireframe") {
-        Lines2D lines(conf);
-        return lines.drawLSystem2D();
+        Wireframe lines;
+        return lines.drawWireFrame(conf);
     }
 };
 
