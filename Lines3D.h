@@ -60,13 +60,13 @@ public:
 
     void translateMatrix(Matrix &m, const Vector3D &v);
 
-    void applyTransformations(Figure3D &f, const Matrix &m);
+    void applyTransformations(const Matrix &m);
 
     Matrix eyePointTrans(const Vector3D &eyepoint);
 
     void toPolar(const Vector3D &point, double &theta, double &phi, double &r);
 
-    Point2D doProjection(const Vector3D &point, const double d);
+    void  doProjection(const Vector3D &point, const double d);
 
     void addLines2D(listWithLines &list);
 };

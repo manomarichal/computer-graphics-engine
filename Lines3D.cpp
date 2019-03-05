@@ -14,6 +14,7 @@ void Figure3D::rotateAroundX(Matrix &m, const double angle) {
     s(2,2) = std::cos(angle);
     s(3,2) = std::sin(angle);
     s(2,3) = -1 * std::sin(angle);
+    //std::cout << "rotation aroud x s:" << std::endl; s.print(std::cout);
     m *= s;
 }
 
@@ -23,15 +24,18 @@ void Figure3D::rotateAroundY(Matrix &m, const double angle) {
     s(3,3) = std::cos(angle);
     s(1,3) = std::sin(angle);
     s(3,1) = -1 * std::sin(angle);
+    //std::cout << "rotation aroud Y s:" << std::endl; s.print(std::cout);
     m *= s;
 }
 
 void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
     Matrix s;
+    std::cout << angle << std::endl;
     s(1,1) = std::cos(angle);
     s(2,2) = std::cos(angle);
     s(2,1) = std::sin(angle);
     s(1,2) = -1 * std::sin(angle);
+    std::cout << "rotation aroud Z s:" << std::endl; s.print(std::cout);
     m *= s;
 }
 
@@ -52,15 +56,15 @@ void Figure3D::translateMatrix(Matrix &m, const Vector3D &v){
 
 }
 
-void Figure3D::applyTransformations(Figure3D &f, const Matrix &m) {
-    for (auto p:f.getPoints()) {
-        std::cout << "normal" << std::endl;
-        std::cout << p.x << "|" << p.y << std::endl;
-        std::cout << "transformations" << std::endl;
-        p = p * m;
-        std::cout << p.x << "|" << p.y << std::endl;
+void Figure3D::applyTransformations(const Matrix &m) {
+    for (auto &p:points) {
+        //std::cout << "normal" << std::endl;
+        //std::cout << p.x << "|" << p.y << std::endl;
+        //std::cout << "transformations" << std::endl;
+        p *= m;
+        //std::cout << p.x << "|" << p.y << std::endl;
     }
-    std::cout << "all points have been calculated" << std::endl;
+    //std::cout << "all points have been calculated" << std::endl;
 }
 
 const std::vector<Vector3D> & Figure3D::getPoints() const {
@@ -71,6 +75,7 @@ void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double
     r = sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
     theta = std::atan(point.y/point.x);
     phi = std::acos(point.z/r);
+    std::cout << "theta: " << theta << "phi: " << phi << "r: " << r << std::endl;
 }
 
 
@@ -88,23 +93,24 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     return m;
 }
 
-Point2D Figure3D::doProjection(const Vector3D &point, const double d) {
+void Figure3D::doProjection(const Vector3D &point, const double d) {
     Point2D newPoint;
     if (point.z !=0)
     newPoint.x = (d*point.x) / (-1*point.z);
     newPoint.y = (d*point.y) / (-1*point.z);
-
-    return newPoint;
+    //std::cout << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
+    points2D.emplace_back(newPoint);
 }
 
 void Figure3D::addLines2D(listWithLines &list) {
-    for (Line2D line:lines2D) {
+    for (const Line2D &line:lines2D) {
         list.emplace_front(line);
     }
 }
+
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // read information from configuration file
-    std::cout << name << std::endl;
+    //std::cout << name << std::endl;
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") {
         rotateX = conf[name]["rotateX"].as_double_or_die();
         rotateY = conf[name]["rotateY"].as_double_or_die();
@@ -126,29 +132,28 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
                                    conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1],
                                    conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2]);
             temp.print(std::cout);
-            std::cout <<std::endl;
             points.emplace_back(temp);
-            //std::cout << k << std::endl;
+            std::cout << k << std::endl;
         }
 
         // generate transformation matrix
         Matrix m;
         m*=eyePointTrans(eye);
-        std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        //std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
         scaleMatrix(m, scale);
-        std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
+        //std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundX(m, rotateX);
-        std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        //std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundY(m, rotateY);
-        std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        //std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
         rotateAroundZ(m, rotateZ);
-        std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        //std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
         translateMatrix(m, center);
-        std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        applyTransformations(*this, m);
+        //std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        applyTransformations(m);
         // apply transformations on points
         for (Vector3D &point:points) {
-            points2D.emplace_back(doProjection(point, 1));
+           doProjection(point, 1);
         }
 
         // create lines
@@ -158,6 +163,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
             temp.p1.y = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[0]].y;
             temp.p2.x = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[1]].x;
             temp.p2.y = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[1]].y;
+            //std::cout << "newline:" << temp.p1.x << "|" << temp.p1.y << "|" << temp.p2.x << "|" << temp.p2.y << std::endl;
             temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
             lines2D.emplace_front(temp);
         }
@@ -203,6 +209,7 @@ const img::EasyImage Wireframe::drawLines2D() {
     img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
     image.clear(img::Color(backgroundcolor.red*255, backgroundcolor.green*255, backgroundcolor.blue*255));
     for (const Line2D &line: lines) {
+        //std::cout << "scaled:\n" << roundToInt((line.p1.x * d) + dx) << "|" << roundToInt((line.p1.y * d) + dy)<< "|" << roundToInt((line.p2.x * d) + dx)<< "|" << roundToInt((line.p2.y * d) + dy) << std::endl;
         image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
                         roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
                         img::Color(line.color.red*255, line.color.green*255, line.color.blue*255));
@@ -216,11 +223,12 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
 
+
     for (int k=0;k<nrOfFigures;k++) {
-        figures.emplace_front(Figure3D("Figure" + std::to_string(k), conf));
+        Figure3D temp("Figure" + std::to_string(k), conf);
+        temp.addLines2D(lines);
+        figures.emplace_front(temp);
     }
-    for (Figure3D &figure: figures) {
-        figure.addLines2D(lines);
-    }
+
     return drawLines2D();
 }
