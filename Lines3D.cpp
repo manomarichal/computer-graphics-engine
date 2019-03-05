@@ -35,7 +35,7 @@ void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
     s(2,2) = std::cos(angle);
     s(2,1) = std::sin(angle);
     s(1,2) = -1 * std::sin(angle);
-    std::cout << "rotation aroud Z s:" << std::endl; s.print(std::cout);
+    //std::cout << "rotation aroud Z s:" << std::endl; s.print(std::cout);
     m *= s;
 }
 
@@ -73,7 +73,7 @@ const std::vector<Vector3D> & Figure3D::getPoints() const {
 
 void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r) {
     r = sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
-    theta = std::atan(point.y/point.x);
+    theta = std::atan2(point.y,point.x);
     phi = std::acos(point.z/r);
     std::cout << "theta: " << theta << "phi: " << phi << "r: " << r << std::endl;
 }
@@ -84,9 +84,9 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     toPolar(eyepoint,theta,phi,r);
     Vector3D v = Vector3D::vector(0,0,-r);
     Matrix m;
-    rotateAroundX(m, phi);
+    rotateAroundZ(m, -(M_PI/2) - theta);
     m.print(std::cout);
-    rotateAroundZ(m, -M_PI/2 - theta);
+    rotateAroundX(m, phi);
     m.print(std::cout);
     translateMatrix(m,v);
     m.print(std::cout);
