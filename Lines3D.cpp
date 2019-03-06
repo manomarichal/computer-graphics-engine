@@ -75,7 +75,7 @@ void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double
     r = sqrt((point.x*point.x) + (point.y*point.y) + (point.z*point.z));
     theta = std::atan2(point.y,point.x);
     phi = std::acos(point.z/r);
-    std::cout << "theta: " << theta << "phi: " << phi << "r: " << r << std::endl;
+    //std::cout << "theta: " << theta << "phi: " << phi << "r: " << r << std::endl;
 }
 
 
@@ -84,7 +84,7 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     toPolar(eyepoint,theta,phi,r);
     Vector3D v = Vector3D::vector(0,0,-r);
     Matrix m;
-    rotateAroundZ(m, -(M_PI/2) - theta);
+    rotateAroundZ(m, (M_PI/2) + theta);
     m.print(std::cout);
     rotateAroundX(m, phi);
     m.print(std::cout);
@@ -95,9 +95,8 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
 
 void Figure3D::doProjection(const Vector3D &point, const double d) {
     Point2D newPoint;
-    if (point.z !=0)
-    newPoint.x = (d*point.x) / (-1*point.z);
-    newPoint.y = (d*point.y) / (-1*point.z);
+    newPoint.x = (d*point.x) / (-point.z);
+    newPoint.y = (d*point.y) / (-point.z);
     //std::cout << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
     points2D.emplace_back(newPoint);
 }
@@ -138,18 +137,18 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 
         // generate transformation matrix
         Matrix m;
-        m*=eyePointTrans(eye);
         //std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
         scaleMatrix(m, scale);
         //std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundX(m, rotateX);
+        rotateAroundX(m, convertToRad(rotateX));
         //std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundY(m, rotateY);
+        rotateAroundY(m, convertToRad(rotateY));
         //std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundZ(m, rotateZ);
+        rotateAroundZ(m, convertToRad(rotateZ));
         //std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
         translateMatrix(m, center);
         //std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
+        m*=eyePointTrans(eye);
         applyTransformations(m);
         // apply transformations on points
         for (Vector3D &point:points) {
