@@ -30,7 +30,7 @@ void Figure3D::rotateAroundY(Matrix &m, const double angle) {
 
 void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
     Matrix s;
-    std::cout << angle << std::endl;
+    //std::cout << angle << std::endl;
     s(1,1) = std::cos(angle);
     s(2,2) = std::cos(angle);
     s(2,1) = std::sin(angle);
@@ -85,11 +85,8 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     Vector3D v = Vector3D::vector(0,0,-r);
     Matrix m;
     rotateAroundZ(m, (M_PI/2) + theta);
-    m.print(std::cout);
     rotateAroundX(m, phi);
-    m.print(std::cout);
     translateMatrix(m,v);
-    m.print(std::cout);
     return m;
 }
 
@@ -130,9 +127,9 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
             Vector3D temp = Vector3D::point(conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[0],
                                    conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1],
                                    conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2]);
-            temp.print(std::cout);
+            //temp.print(std::cout);
             points.emplace_back(temp);
-            std::cout << k << std::endl;
+            //std::cout << k << std::endl;
         }
 
         // generate transformation matrix

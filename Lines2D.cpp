@@ -43,11 +43,11 @@ const img::EasyImage Lines2D::drawLines2D(const listWithLines &list, int size) {
 
     // draw the lines
     img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
-    image.clear(img::Color(backgroundcolor.red, backgroundcolor.green, backgroundcolor.blue));
+    image.clear(img::Color(backgroundcolor.red*255, backgroundcolor.green*255, backgroundcolor.blue*255));
     for (const Line2D line: list) {
         image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
                         roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
-                        img::Color(line.color.red, line.color.green, line.color.blue));
+                        img::Color(line.color.red*255, line.color.green*255, line.color.blue*255));
     }
     return image;
 }

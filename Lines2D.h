@@ -43,7 +43,7 @@ struct Line2D {
 typedef std::forward_list<Line2D> listWithLines;
 
 inline int roundToInt(double d){
-    return static_cast<int>(std::round(d));
+    return static_cast<int>(d);
 }
 
 inline double convertToRad(double a) {
