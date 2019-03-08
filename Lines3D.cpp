@@ -115,66 +115,84 @@ void Figure3D::addLines2D(listWithLines &list) {
     }
 }
 
+// create functions
+void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf) {
+    nrOfPoints = conf[name]["nrPoints"].as_int_or_die();
+    // read in points
+    for (int k=0;k<nrOfPoints;k++) {
+        // for each line
+        Vector3D temp = Vector3D::point(conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[0],
+                                        conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1],
+                                        conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2]);
+        //temp.print(std::cout);
+        points.emplace_back(temp);
+        //std::cout << k << std::endl;
+    }
+
+    nrOfLines = conf[name]["nrLines"].as_int_or_die();
+
+    // read in faces
+    for (int k=0;k<nrOfLines;k++){
+        Face temp;
+        temp.pointIndexes.emplace_back(conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[0]);
+        temp.pointIndexes.emplace_back(conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[1]);
+        faces.emplace_back(temp);
+    }
+
+}
+
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // read information from configuration file
     //std::cout << name << std::endl;
-    if (conf[name]["type"].as_string_or_die() == "LineDrawing") {
-        rotateX = conf[name]["rotateX"].as_double_or_die();
-        rotateY = conf[name]["rotateY"].as_double_or_die();
-        rotateZ = conf[name]["rotateZ"].as_double_or_die();
-        center = Vector3D::point(conf[name]["center"].as_double_tuple_or_die()[0],
-                                 conf[name]["center"].as_double_tuple_or_die()[1],
-                                 conf[name]["center"].as_double_tuple_or_die()[2]);
-        eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
-                              conf["General"]["eye"].as_double_tuple_or_die()[1],
-                              conf["General"]["eye"].as_double_tuple_or_die()[2]);
-        scale = conf[name]["scale"].as_double_or_die();
-        nrOfPoints = conf[name]["nrPoints"].as_int_or_die();
-        nrOfLines = conf[name]["nrLines"].as_int_or_die();
+    rotateX = conf[name]["rotateX"].as_double_or_die();
+    rotateY = conf[name]["rotateY"].as_double_or_die();
+    rotateZ = conf[name]["rotateZ"].as_double_or_die();
+    scale = conf[name]["scale"].as_double_or_die();
+    center = Vector3D::point(conf[name]["center"].as_double_tuple_or_die()[0],
+                             conf[name]["center"].as_double_tuple_or_die()[1],
+                             conf[name]["center"].as_double_tuple_or_die()[2]);
+    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                          conf["General"]["eye"].as_double_tuple_or_die()[1],
+                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
-        // read in points
-        for (int k=0;k<nrOfPoints;k++) {
-            // for each line
-            Vector3D temp = Vector3D::point(conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[0],
-                                   conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[1],
-                                   conf[name]["point" + std::to_string(k)].as_double_tuple_or_die()[2]);
-            //temp.print(std::cout);
-            points.emplace_back(temp);
-            //std::cout << k << std::endl;
-        }
 
-        // generate transformation matrix
-        Matrix m;
-        //std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        scaleMatrix(m, scale);
-        //std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundX(m, convertToRad(rotateX));
-        //std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundY(m, convertToRad(rotateY));
-        //std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        rotateAroundZ(m, convertToRad(rotateZ));
-        //std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        translateMatrix(m, center);
-        //std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
-        m*=eyePointTrans(eye);
-        applyTransformations(m);
-        // apply transformations on points
-        for (Vector3D &point:points) {
-           doProjection(point, 1);
-        }
+    // read in faces
+    if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
-        // create lines
-        for (int k=0; k<nrOfLines;k++) {
-            Line2D temp;
-            temp.p1.x = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[0]].x;
-            temp.p1.y = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[0]].y;
-            temp.p2.x = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[1]].x;
-            temp.p2.y = points2D[conf[name]["line" + std::to_string(k)].as_double_tuple_or_die()[1]].y;
-            //std::cout << "newline:" << temp.p1.x << "|" << temp.p1.y << "|" << temp.p2.x << "|" << temp.p2.y << std::endl;
-            temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
-            lines2D.emplace_front(temp);
+    // generate transformation matrix
+    Matrix m;
+    //std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
+    scaleMatrix(m, scale);
+    //std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
+    rotateAroundX(m, convertToRad(rotateX));
+    //std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
+    rotateAroundY(m, convertToRad(rotateY));
+    //std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
+    rotateAroundZ(m, convertToRad(rotateZ));
+    //std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
+    translateMatrix(m, center);
+    //std::cout << "trans"<< std::endl; m.print(std::cout); std::cout << std::endl;
+    m*=eyePointTrans(eye);
+    applyTransformations(m);
+    // apply transfaormations on points
+    for (Vector3D &point:points) {
+        doProjection(point, 1);
+    }
+    
+
+    // create lines
+    for (const Face &face:faces){
+        for (uint index=0;index < face.pointIndexes.size()-1; index++) {
+            Line2D lineTemp;
+            lineTemp.p1.x = points[face.pointIndexes[index]].x;
+            lineTemp.p1.y = points[face.pointIndexes[index]].y;
+            lineTemp.p2.x = points[face.pointIndexes[index+1]].x;
+            lineTemp.p2.y = points[face.pointIndexes[index+1]].y;
+            lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
+            lines2D.emplace_front(lineTemp);
         }
     }
+
 }
 
 const img::EasyImage Wireframe::drawLines2D() {
@@ -229,8 +247,6 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     imageSize = conf["General"]["size"].as_int_or_die();
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
-
-
     for (int k=0;k<nrOfFigures;k++) {
         Figure3D temp("Figure" + std::to_string(k), conf);
         temp.addLines2D(lines);
@@ -238,4 +254,15 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     }
 
     return drawLines2D();
+}
+
+img::EasyImage PlatonicBody::drawPlatonicBody(const ini::Configuration &conf) {
+    imageSize = conf["General"]["size"].as_int_or_die();
+    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
+    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
+    for (int k=0;k<nrOfFigures;k++) {
+        Figure3D temp("Figure" + std::to_string(k), conf);
+        temp.addLines2D(lines);
+        figures.emplace_front(temp);
+    }
 }

@@ -43,6 +43,7 @@ private:
     double rotateX, rotateY, rotateZ, scale;
     Vector3D center, eye;
     int nrOfPoints, nrOfLines;
+    std::vector<Face> faces;
 
 public:
     const std::vector<Vector3D>& getPoints() const;
@@ -68,6 +69,10 @@ public:
     void  doProjection(const Vector3D &point, const double d);
 
     void addLines2D(listWithLines &list);
+
+    void createCube(const ini::Configuration &conf);
+
+    void createLineDrawing(std::string name, const ini::Configuration &conf);
 };
 
 
@@ -79,5 +84,14 @@ class Wireframe {
     const img::EasyImage drawLines2D();
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf);
+};
+
+class PlatonicBody {
+    Color backgroundcolor;
+    int imageSize, nrOfFigures;
+    std::forward_list<Figure3D> figures;
+    listWithLines lines;
+public:
+    img::EasyImage drawPlatonicBody(const ini::Configuration &conf);
 };
 #endif //FUCKINGWERKCG_LINES3D_H
