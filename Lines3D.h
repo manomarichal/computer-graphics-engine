@@ -40,7 +40,6 @@ private:
     std::vector<Vector3D> points;
     std::vector<Point2D> points2D;
     listWithLines lines2D;
-    std::vector<Face> faces;
     double rotateX, rotateY, rotateZ, scale;
     Vector3D center, eye;
     int nrOfPoints, nrOfLines;

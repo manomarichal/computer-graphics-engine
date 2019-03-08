@@ -23,8 +23,8 @@ struct Color {
     double red, green, blue;
     void ini(const std::vector<double> &vec) {
         red = vec[0];
-        blue = vec[2];
         green = vec[1];
+        blue = vec[2];
     }
 
     void iniDouble(const double &r, const double &g, const double &b) {
@@ -40,7 +40,7 @@ struct Line2D {
     Color color;
 };
 
-typedef std::forward_list<Line2D> listWithLines;
+typedef std::list<Line2D> listWithLines;
 
 inline int roundToInt(double d){
     return static_cast<int>(d);

@@ -12,8 +12,8 @@ void Figure3D::rotateAroundX(Matrix &m, const double angle) {
     Matrix s;
     s(3,3) = std::cos(angle);
     s(2,2) = std::cos(angle);
-    s(3,2) = std::sin(angle);
-    s(2,3) = -1 * std::sin(angle);
+    s(3,2) = -std::sin(angle);
+    s(2,3) = std::sin(angle);
     //std::cout << "rotation aroud x s:" << std::endl; s.print(std::cout);
     m *= s;
 }
@@ -23,7 +23,7 @@ void Figure3D::rotateAroundY(Matrix &m, const double angle) {
     s(1,1) = std::cos(angle);
     s(3,3) = std::cos(angle);
     s(1,3) = std::sin(angle);
-    s(3,1) = -1 * std::sin(angle);
+    s(3,1) = -std::sin(angle);
     //std::cout << "rotation aroud Y s:" << std::endl; s.print(std::cout);
     m *= s;
 }
@@ -33,8 +33,8 @@ void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
     //std::cout << angle << std::endl;
     s(1,1) = std::cos(angle);
     s(2,2) = std::cos(angle);
-    s(2,1) = std::sin(angle);
-    s(1,2) = -1 * std::sin(angle);
+    s(2,1) = -std::sin(angle);
+    s(1,2) = std::sin(angle);
     //std::cout << "rotation aroud Z s:" << std::endl; s.print(std::cout);
     m *= s;
 }
@@ -84,9 +84,20 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
     toPolar(eyepoint,theta,phi,r);
     Vector3D v = Vector3D::vector(0,0,-r);
     Matrix m;
-    rotateAroundZ(m, (M_PI/2) + theta);
-    rotateAroundX(m, phi);
+    /*
+    rotateAroundZ(m, (-M_PI/2) - theta);
+    rotateAroundX(m, -phi);
     translateMatrix(m,v);
+     */
+    m(1,1) = -std::sin(theta);
+    m(1,2) = -std::cos(theta) * std::cos(phi);
+    m(1,3) = std::cos(theta) * std::sin(phi);
+    m(2,1) = cos(theta);
+    m(2,2) = -std::sin(theta) * cos(phi);
+    m(2,3) = std::sin(theta) * std::sin(phi);
+    m(3,2) = std::sin(phi);
+    m(3,3) = std::cos(phi);
+    m(4,3) = -r;
     return m;
 }
 
@@ -100,7 +111,7 @@ void Figure3D::doProjection(const Vector3D &point, const double d) {
 
 void Figure3D::addLines2D(listWithLines &list) {
     for (const Line2D &line:lines2D) {
-        list.emplace_front(line);
+        list.emplace_back(line);
     }
 }
 
