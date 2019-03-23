@@ -98,15 +98,17 @@ Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
 }
 
 void Figure3D::doProjection(const Vector3D &point, const double d) {
+    //std::cout << "old point: " << point.x << "|" << point.y << "|" << point.z << std::endl;
     Point2D newPoint;
     newPoint.x = (d*point.x) / (-point.z);
     newPoint.y = (d*point.y) / (-point.z);
-    std::cout << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
+    //std::cout << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
     points2D.emplace_back(newPoint);
 }
 
 // create figure functions
 void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf) {
+
     nrOfPoints = conf[name]["nrPoints"].as_int_or_die();
     // read in points
     for (int k=0;k<nrOfPoints;k++) {
@@ -127,6 +129,385 @@ void Figure3D::createLineDrawing(std::string name, const ini::Configuration &con
         faces.emplace_back(temp);
     }
 
+}
+
+void Figure3D::createCube(std::string name, const ini::Configuration &conf) {
+
+    // read in points
+    points.emplace_back(Vector3D::point(0,0,0)); // dummy
+    points.emplace_back(Vector3D::point(1,-1,-1));
+    points.emplace_back(Vector3D::point(-1,1,- 1));
+    points.emplace_back(Vector3D::point(1,1,1));
+    points.emplace_back(Vector3D::point(-1,-1,1));
+    points.emplace_back(Vector3D::point(1,1,-1));
+    points.emplace_back(Vector3D::point(-1,-1,-1));
+    points.emplace_back(Vector3D::point(1,-1,1));
+    points.emplace_back(Vector3D::point(-1,1,1));
+
+    // read in faces
+    Face temp;
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(5);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(7);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(5);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(8);
+    temp.pointIndexes.emplace_back(3);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(8);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(7);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(7);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(8);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+}
+
+void Figure3D::createTetrahedron(std::string name, const ini::Configuration &conf) {
+    // read in points
+    points.emplace_back(Vector3D::point(0,0,0)); // dummy
+    points.emplace_back(Vector3D::point(1,-1,-1));
+    points.emplace_back(Vector3D::point(-1,1,- 1));
+    points.emplace_back(Vector3D::point(1,1,1));
+    points.emplace_back(Vector3D::point(-1,-1,1));
+
+
+    // read in faces
+    Face temp;
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(3);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(3);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(2);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+}
+
+void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf) {
+
+    // read in points
+    points.emplace_back(Vector3D::point(0,0,0)); // dummy
+    points.emplace_back(Vector3D::point(1,0,0));
+    points.emplace_back(Vector3D::point(0,1,0));
+    points.emplace_back(Vector3D::point(-1,0,0));
+    points.emplace_back(Vector3D::point(0,-1,0));
+    points.emplace_back(Vector3D::point(0,0,-1));
+    points.emplace_back(Vector3D::point(0,0,1));
+
+    // read in faces
+    Face temp;
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+}
+
+void Figure3D::createIsocahedron(std::string name, const ini::Configuration &conf) {
+    // read in points
+    points.emplace_back(Vector3D::point(0,0,0)); // dummy
+    points.emplace_back(Vector3D::point(0,0,sqrt(5)/2));
+    for (int i=2;i<=6;i++) {
+        double x = std::cos(((i-2)*2*M_PI)/5);
+        double y = std::sin(((i-2)*2*M_PI)/5);
+        points.emplace_back(Vector3D::point(x,y,0.5));
+    }
+    for (int i=7;i<=11;i++) {
+        double x = std::cos(M_PI/5 + ((i - 7)*2*M_PI)/5);
+        double y = std::sin(M_PI/5 + ((i - 7)*2*M_PI)/5);
+        points.emplace_back(Vector3D::point(x,y,-0.5));
+    }
+    points.emplace_back(Vector3D::point(0,0,-sqrt(5)/2));
+
+    // read in faces
+    Face temp;
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(3);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(5);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(2);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(7);
+    temp.pointIndexes.emplace_back(3);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(7);
+    temp.pointIndexes.emplace_back(8);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(8);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(8);
+    temp.pointIndexes.emplace_back(9);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(9);
+    temp.pointIndexes.emplace_back(5);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(5);
+    temp.pointIndexes.emplace_back(9);
+    temp.pointIndexes.emplace_back(10);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(5);
+    temp.pointIndexes.emplace_back(10);
+    temp.pointIndexes.emplace_back(6);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(10);
+    temp.pointIndexes.emplace_back(11);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(6);
+    temp.pointIndexes.emplace_back(11);
+    temp.pointIndexes.emplace_back(2);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(11);
+    temp.pointIndexes.emplace_back(7);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(12);
+    temp.pointIndexes.emplace_back(8);
+    temp.pointIndexes.emplace_back(7);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(12);
+    temp.pointIndexes.emplace_back(9);
+    temp.pointIndexes.emplace_back(8);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(12);
+    temp.pointIndexes.emplace_back(10);
+    temp.pointIndexes.emplace_back(9);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(12);
+    temp.pointIndexes.emplace_back(11);
+    temp.pointIndexes.emplace_back(10);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(12);
+    temp.pointIndexes.emplace_back(7);
+    temp.pointIndexes.emplace_back(11);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+
+}
+
+// helper function for dodecahedron
+void Figure3D::createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints) {
+    points.emplace_back(Vector3D::point((tempPoints[a].x + tempPoints[b].x + tempPoints[c].x)/3,
+                                        (tempPoints[a].y + tempPoints[b].y + tempPoints[c].y)/3,
+                                        (tempPoints[a].z + tempPoints[b].z + tempPoints[c].z)/3));
+}
+
+// helper function for dodecahedron
+void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
+    Face temp;
+    temp.pointIndexes.emplace_back(a);
+    temp.pointIndexes.emplace_back(b);
+    temp.pointIndexes.emplace_back(c);
+    temp.pointIndexes.emplace_back(d);
+    temp.pointIndexes.emplace_back(e);
+    faces.emplace_back(temp);
+}
+
+void Figure3D::createDodecahedron(std::string name, const ini::Configuration &conf) {
+
+    // read in points
+    // generate isocahedron points
+    std::vector<Vector3D> tempPoints;
+    tempPoints.emplace_back(Vector3D::point(0,0,0)); // dummy
+    tempPoints.emplace_back(Vector3D::point(0,0,sqrt(5)/2));
+    for (int i=2;i<=6;i++) {
+        double x = std::cos(((i-2)*2*M_PI)/5);
+        double y = std::sin(((i-2)*2*M_PI)/5);
+        tempPoints.emplace_back(Vector3D::point(x,y,0.5));
+    }
+    for (int i=7;i<=11;i++) {
+        double x = std::cos(M_PI/5 + ((i - 7)*2*M_PI)/5);
+        double y = std::sin(M_PI/5 + ((i - 7)*2*M_PI)/5);
+        tempPoints.emplace_back(Vector3D::point(x,y,-0.5));
+    }
+    tempPoints.emplace_back(Vector3D::point(0,0,-sqrt(5)/2));
+
+    // generate dodecahedron points
+    points.emplace_back(Vector3D::point(0,0,0)); // dummy
+    createDodecahedronPoint(1,2,3, tempPoints);
+    createDodecahedronPoint(1,3,4, tempPoints);
+    createDodecahedronPoint(1,4,5, tempPoints);
+    createDodecahedronPoint(1,5,6, tempPoints);
+    createDodecahedronPoint(1,6,2, tempPoints);
+    createDodecahedronPoint(2,7,3, tempPoints);
+    createDodecahedronPoint(3,7,8, tempPoints);
+    createDodecahedronPoint(3,8,4, tempPoints);
+    createDodecahedronPoint(4,8,9, tempPoints);
+    createDodecahedronPoint(4,9,5, tempPoints);
+    createDodecahedronPoint(5,9,10, tempPoints);
+    createDodecahedronPoint(5,10,6, tempPoints);
+    createDodecahedronPoint(6,10,11, tempPoints);
+    createDodecahedronPoint(6,11,2, tempPoints);
+    createDodecahedronPoint(2,11,7, tempPoints);
+    createDodecahedronPoint(12,8,7, tempPoints);
+    createDodecahedronPoint(12,9,8, tempPoints);
+    createDodecahedronPoint(12,10,9, tempPoints);
+    createDodecahedronPoint(12,11,10, tempPoints);
+    createDodecahedronPoint(12,7,11, tempPoints);
+
+    // generate faces
+    createDodecahedronFace(1,2,3,4,5);
+    createDodecahedronFace(1,6,7,8,2);
+    createDodecahedronFace(2,8,9,10,3);
+    createDodecahedronFace(3,10,11,12,4);
+    createDodecahedronFace(4,12,13,14,5);
+    createDodecahedronFace(5,14,15,6,1);
+    createDodecahedronFace(20,19,18,17,16);
+    createDodecahedronFace(20,15,14,13,19);
+    createDodecahedronFace(19,13,12,11,18);
+    createDodecahedronFace(18,11,10,9,17);
+    createDodecahedronFace(17,9,8,7,16);
+    createDodecahedronFace(16,7,6,15,20);
+}
+
+void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
+    
 }
 
 // constructor and hulpfunctions
@@ -150,24 +531,31 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
                           conf["General"]["eye"].as_double_tuple_or_die()[1],
                           conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
-
     // read in faces
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
+    else if (conf[name]["type"].as_string_or_die() == "Cube") createCube(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "Octahedron") createOctahedron(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "Tetrahedron") createTetrahedron(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "Icosahedron") createIsocahedron(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "Dodecahedron") createDodecahedron(name, conf);
+
+    else std::cout << "unknown figure type" << std::endl;
+
     // generate transformation matrix
     Matrix m;
-    //std::cout << "eye"<< std::endl; m.print(std::cout); std::cout << std::endl;
     scaleMatrix(m, scale);
-    //std::cout << "scale" << std::endl; m.print(std::cout); std::cout << std::endl;
     rotateAroundX(m, convertToRad(rotateX));
-    //std::cout << "rx"<< std::endl; m.print(std::cout); std::cout << std::endl;
     rotateAroundY(m, convertToRad(rotateY));
-    //std::cout << "ry"<< std::endl; m.print(std::cout); std::cout << std::endl;
     rotateAroundZ(m, convertToRad(rotateZ));
-    //std::cout << "rz"<< std::endl; m.print(std::cout); std::cout << std::endl;
     translateMatrix(m, center);
     m*=eyePointTrans(eye);
     applyTransformations(m);
+
     // apply transfaormations on points
     for (Vector3D &point:points) {
         doProjection(point, 1);
@@ -176,14 +564,14 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 
     // create lines
     for (const Face &face:faces){
-        for (uint index=0;index < face.pointIndexes.size()-1; index++) {
+        for (uint index=0;index < face.pointIndexes.size(); index++) {
             Line2D lineTemp;
             lineTemp.p1.x = points[face.pointIndexes[index]].x;
             lineTemp.p1.y = points[face.pointIndexes[index]].y;
-            lineTemp.p2.x = points[face.pointIndexes[index+1]].x;
-            lineTemp.p2.y = points[face.pointIndexes[index+1]].y;
+            lineTemp.p2.x = points[face.pointIndexes[(index+1)%face.pointIndexes.size()]].x;
+            lineTemp.p2.y = points[face.pointIndexes[(index+1)%face.pointIndexes.size()]].y;
             lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
-            lines2D.emplace_front(lineTemp);
+            lines2D.emplace_back(lineTemp);
         }
     }
 
@@ -244,19 +632,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     for (int k=0;k<nrOfFigures;k++) {
         Figure3D temp("Figure" + std::to_string(k), conf);
         temp.addLines2D(lines);
-        figures.emplace_front(temp);
     }
 
     return drawLines2D();
-}
-
-img::EasyImage PlatonicBody::drawPlatonicBody(const ini::Configuration &conf) {
-    imageSize = conf["General"]["size"].as_int_or_die();
-    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
-    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
-    for (int k=0;k<nrOfFigures;k++) {
-        Figure3D temp("Figure" + std::to_string(k), conf);
-        temp.addLines2D(lines);
-        figures.emplace_front(temp);
-    }
 }

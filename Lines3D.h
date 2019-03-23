@@ -32,6 +32,12 @@ struct Point3D {
 
 struct Face {
     std::vector<int> pointIndexes;
+    Face()= default;
+    Face(std::vector<int> indexes) {
+        for (auto i:indexes) {
+            pointIndexes.emplace_back(i);
+        }
+    }
 };
 
 class Figure3D {
@@ -44,6 +50,11 @@ private:
     Vector3D center, eye;
     int nrOfPoints, nrOfLines;
     std::vector<Face> faces;
+
+    //helper functions
+    void createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints);
+    void createDodecahedronFace(int a, int b, int c, int d, int e);
+
 
 public:
     const std::vector<Vector3D>& getPoints() const;
@@ -70,28 +81,31 @@ public:
 
     void addLines2D(listWithLines &list);
 
-    void createCube(const ini::Configuration &conf);
+    // create functions
+    void createCube(std::string name, const ini::Configuration &conf);
 
     void createLineDrawing(std::string name, const ini::Configuration &conf);
+
+    void createTetrahedron(std::string name, const ini::Configuration &conf);
+
+    void createOctahedron(std::string name, const ini::Configuration &conf);
+
+    void createIsocahedron(std::string name, const ini::Configuration &conf);
+
+    void createDodecahedron(std::string name, const ini::Configuration &conf);
+
+    void createSphere(std::string name, const ini::Configuration &conf);
 };
 
 
 class Wireframe {
     Color backgroundcolor;
     int imageSize, nrOfFigures;
-    std::forward_list<Figure3D> figures;
     listWithLines lines;
     const img::EasyImage drawLines2D();
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf);
 };
 
-class PlatonicBody {
-    Color backgroundcolor;
-    int imageSize, nrOfFigures;
-    std::forward_list<Figure3D> figures;
-    listWithLines lines;
-public:
-    img::EasyImage drawPlatonicBody(const ini::Configuration &conf);
-};
+
 #endif //FUCKINGWERKCG_LINES3D_H
