@@ -106,6 +106,29 @@ void Figure3D::doProjection(const Vector3D &point, const double d) {
     points2D.emplace_back(newPoint);
 }
 
+// helper functions
+void Figure3D::addLines2D(listWithLines &list) {
+    for (const Line2D &line:lines2D) {
+        list.emplace_back(line);
+    }
+}
+
+void Figure3D::createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints) {
+    points.emplace_back(Vector3D::point((tempPoints[a-1].x + tempPoints[b-1].x + tempPoints[c-1].x)/3,
+                                        (tempPoints[a-1].y + tempPoints[b-1].y + tempPoints[c-1].y)/3,
+                                        (tempPoints[a-1].z + tempPoints[b-1].z + tempPoints[c-1].z)/3));
+}
+
+void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
+    Face temp;
+    temp.pointIndexes.emplace_back(a-1);
+    temp.pointIndexes.emplace_back(b-1);
+    temp.pointIndexes.emplace_back(c-1);
+    temp.pointIndexes.emplace_back(d-1);
+    temp.pointIndexes.emplace_back(e-1);
+    faces.emplace_back(temp);
+}
+
 // create figure functions
 void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf) {
 
@@ -291,7 +314,6 @@ void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf
 
 void Figure3D::createIsocahedron(std::string name, const ini::Configuration &conf) {
     // read in points
-    points.emplace_back(Vector3D::point(0,0,0)); // dummy
     points.emplace_back(Vector3D::point(0,0,sqrt(5)/2));
     for (int i=2;i<=6;i++) {
         double x = std::cos(((i-2)*2*M_PI)/5);
@@ -428,25 +450,12 @@ void Figure3D::createIsocahedron(std::string name, const ini::Configuration &con
     faces.emplace_back(temp);
     temp.pointIndexes.clear();
 
+    for (auto &face:faces) {
+        for (auto &i:face.pointIndexes) {
+            i = i-1;
+        }
+    }
 
-}
-
-// helper function for dodecahedron
-void Figure3D::createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints) {
-    points.emplace_back(Vector3D::point((tempPoints[a].x + tempPoints[b].x + tempPoints[c].x)/3,
-                                        (tempPoints[a].y + tempPoints[b].y + tempPoints[c].y)/3,
-                                        (tempPoints[a].z + tempPoints[b].z + tempPoints[c].z)/3));
-}
-
-// helper function for dodecahedron
-void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
-    Face temp;
-    temp.pointIndexes.emplace_back(a);
-    temp.pointIndexes.emplace_back(b);
-    temp.pointIndexes.emplace_back(c);
-    temp.pointIndexes.emplace_back(d);
-    temp.pointIndexes.emplace_back(e);
-    faces.emplace_back(temp);
 }
 
 void Figure3D::createDodecahedron(std::string name, const ini::Configuration &conf) {
@@ -454,7 +463,6 @@ void Figure3D::createDodecahedron(std::string name, const ini::Configuration &co
     // read in points
     // generate isocahedron points
     std::vector<Vector3D> tempPoints;
-    tempPoints.emplace_back(Vector3D::point(0,0,0)); // dummy
     tempPoints.emplace_back(Vector3D::point(0,0,sqrt(5)/2));
     for (int i=2;i<=6;i++) {
         double x = std::cos(((i-2)*2*M_PI)/5);
@@ -469,7 +477,6 @@ void Figure3D::createDodecahedron(std::string name, const ini::Configuration &co
     tempPoints.emplace_back(Vector3D::point(0,0,-sqrt(5)/2));
 
     // generate dodecahedron points
-    points.emplace_back(Vector3D::point(0,0,0)); // dummy
     createDodecahedronPoint(1,2,3, tempPoints);
     createDodecahedronPoint(1,3,4, tempPoints);
     createDodecahedronPoint(1,4,5, tempPoints);
@@ -507,15 +514,117 @@ void Figure3D::createDodecahedron(std::string name, const ini::Configuration &co
 }
 
 void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
-    
+    /*
+    int n =  conf["Sphere"]["n"].as_int_or_die();
+    createIsocahedron(name, conf);
+    for (int i=0;i<n;i++) {
+    }
+
+    for (int index;index < points.size()-1;index++) {
+        points.insert(points.begin()+index+1, Vector3D::point((points[index].x + points[index+1].x)/2,
+                                                              (points[index].y + points[index+1].y)/2,
+                                                              (points[index].z + points[index+1].z)/2));
+    }
+
+    std::vector<Face> oldFaces = faces;
+    faces.clear();
+    for (auto &face:oldFaces) {
+
+    }
+     */
+}
+
+// 3DLSystem functions
+void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf) {
+    // parse Lsystem file
+    std::string input = conf[name]["inputfile"].as_string_or_die();
+    std::ifstream input_stream(input);
+    input_stream >> system;
+    input_stream.close();
+
+    // initialize variables
+    H = Vector3D::vector(1,0,0);
+    L = Vector3D::vector(0,1,0);
+    U = Vector3D::vector(0,0,1);
+    points.emplace_back(Vector3D::point(0,0,0));
+    maxRecursionDepth = system.get_nr_iterations();
+    currentAngle = convertToRad(system.get_angle());
+    delta = convertToRad(system.get_angle());
+    calculateLines(system.get_initiator());
+}
+
+void Figure3D::calculateLines(const std::string &input) {
+    //std::cout << input << std::endl;
+    for (char c:input) {
+        // check if the alphabet contains the symbol, if so replace it
+        if (system.get_alphabet().find(c) != system.get_alphabet().end() and recursionDepth < maxRecursionDepth) {
+            recursionDepth++;
+            calculateLines(system.get_replacement(c));
+            continue;
+        }
+            // max recursion depth reached
+        else if (c == '+') {
+            Vector3D temp = H*std::cos(delta) + L*std::sin(delta);
+            L = -H*std::sin(delta) + L*std::cos(delta);
+            H = temp;
+        }
+        else if (c == '-') {
+            Vector3D temp = H*std::cos(-delta) + L*std::sin(-delta);
+            L = -H*std::sin(-delta) + L*std::cos(-delta);
+            H = temp;
+        }
+        else if (c == '^') {
+            Vector3D temp = H*std::cos(delta) + U*std::sin(delta);
+            U = -H*std::sin(delta) + U*std::cos(delta);
+            H = temp;
+        }
+        else if (c == '&') {
+            Vector3D temp = H*std::cos(-delta) + U*std::sin(-delta);
+            U = -H*std::sin(-delta) + U*std::cos(-delta);
+            H = temp;
+        }
+        else if (c == '\\') {
+            Vector3D temp = L*std::cos(delta) - U*std::sin(delta);
+            U = L*std::sin(delta) + U*std::cos(delta);
+            L = temp;
+        }
+        else if (c == '/') {
+            Vector3D temp = L*std::cos(-delta) - U*std::sin(-delta);
+            U = L*std::sin(-delta) + U*std::cos(-delta);
+            L = temp;
+        }
+        else if (c == '|') {
+            H = -H;
+            L = -L;
+        }
+        else if (c == '(') {
+            stackPoint3D temp;
+            temp.H = H; temp.L = L; temp.U = U; temp.index = points.size() - 1;
+            stackPoint.emplace_front(temp);
+        }
+        else if (c == ')') {
+            H = stackPoint.front().H;
+            L = stackPoint.front().L;
+            U = stackPoint.front().U;
+            for (int i=points.size()-1;i>stackPoint.front().index;i--) {
+                points.erase(points.begin() + i);
+            }
+            stackPoint.pop_front();
+        }
+        else if (system.get_alphabet().find(c) != system.get_alphabet().end()) {
+            points.emplace_back(Vector3D::point( points[points.size()-1] + H));
+            if (system.draw(c)) {
+                Face temp;
+                temp.pointIndexes.emplace_back(points.size() - 2);
+                temp.pointIndexes.emplace_back(points.size() - 1);
+                faces.emplace_back(temp);
+            }
+        }
+    }
+    recursionDepth--;
 }
 
 // constructor and hulpfunctions
-void Figure3D::addLines2D(listWithLines &list) {
-    for (const Line2D &line:lines2D) {
-        list.emplace_back(line);
-    }
-}
 
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // read information from configuration file
@@ -543,6 +652,8 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     else if (conf[name]["type"].as_string_or_die() == "Icosahedron") createIsocahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Dodecahedron") createDodecahedron(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
 
     else std::cout << "unknown figure type" << std::endl;
 

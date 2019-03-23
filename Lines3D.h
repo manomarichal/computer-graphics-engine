@@ -40,8 +40,18 @@ struct Face {
     }
 };
 
+struct FaceWithPoints {
+    std::vector<Vector3D> pointIndexes;
+};
+
+struct stackPoint3D {
+    Vector3D H, L, U;
+    int index;
+};
+
 class Figure3D {
 private:
+    // variables used by all 3D figures
     Color color;
     std::vector<Vector3D> points;
     std::vector<Point2D> points2D;
@@ -54,6 +64,17 @@ private:
     //helper functions
     void createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints);
     void createDodecahedronFace(int a, int b, int c, int d, int e);
+
+    // variables and functions used by a 3DLSystem
+    Vector3D H, L, U;
+    Vector3D currentPos;
+    double currentPhi, currentTheta, currentAngle, delta;
+    int recursionDepth=0; int maxRecursionDepth;
+    LParser::LSystem3D system;
+    std::forward_list<stackPoint3D> stackPoint;
+
+    // helper functions for 3DLSystems
+    void calculateLines(const std::string &input);
 
 
 public:
@@ -95,6 +116,8 @@ public:
     void createDodecahedron(std::string name, const ini::Configuration &conf);
 
     void createSphere(std::string name, const ini::Configuration &conf);
+
+    void create3DLSystem(std::string name, const ini::Configuration &conf);
 };
 
 
