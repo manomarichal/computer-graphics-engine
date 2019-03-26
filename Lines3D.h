@@ -38,6 +38,18 @@ struct Face {
             pointIndexes.emplace_back(i);
         }
     }
+    Face(int a, int b, int c) {
+        pointIndexes.emplace_back(a);
+        pointIndexes.emplace_back(b);
+        pointIndexes.emplace_back(c);
+    }
+
+    Face(int a, int b, int c, int d) {
+        pointIndexes.emplace_back(a);
+        pointIndexes.emplace_back(b);
+        pointIndexes.emplace_back(c);
+        pointIndexes.emplace_back(d);
+    }
 };
 
 struct FaceWithPoints {
@@ -116,6 +128,12 @@ public:
     void createDodecahedron(std::string name, const ini::Configuration &conf);
 
     void createSphere(std::string name, const ini::Configuration &conf);
+
+    void createCone(std::string name, const ini::Configuration &conf);
+
+    void createCylinder(std::string name, const ini::Configuration &conf);
+
+    void createTorus(std::string name, const ini::Configuration &conf);
 
     void create3DLSystem(std::string name, const ini::Configuration &conf);
 };
