@@ -612,9 +612,25 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
     int m = conf[name]["m"].as_int_or_die();
 
     for (int i=0;i<n;i++) {
-        for (int j=0;j<n;j++) {
+        for (int j = 0; j < n; j++) {
 
+            double u = (2*i*pi) / n;
+            double v = (2*j*pi) / n;
+
+            points.emplace_back(Vector3D::point((R + r*std::cos(v)) * std::cos(u),
+                                                (R + r*std::cos(v)) * std::cos(u),
+                                                 R + r*std::sin(v)));
         }
+    }
+
+    for (int i=0;i<n;i++) {
+        for (int j = 0; j < n; j++) {
+
+            faces.emplace_back()
+        }
+    }
+
+
 }
 
 // 3DLSystem functions
