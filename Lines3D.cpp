@@ -168,49 +168,12 @@ void Figure3D::createCube(std::string name, const ini::Configuration &conf) {
     points.emplace_back(Vector3D::point(-1, 1, 1));
 
     // read in faces
-    Face temp;
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(5);
-    temp.pointIndexes.emplace_back(3);
-    temp.pointIndexes.emplace_back(7);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(5);
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(8);
-    temp.pointIndexes.emplace_back(3);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(6);
-    temp.pointIndexes.emplace_back(4);
-    temp.pointIndexes.emplace_back(8);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(6);
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(7);
-    temp.pointIndexes.emplace_back(4);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(7);
-    temp.pointIndexes.emplace_back(3);
-    temp.pointIndexes.emplace_back(8);
-    temp.pointIndexes.emplace_back(4);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(6);
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(5);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
+    faces.emplace_back(Face(1,5,3,7));
+    faces.emplace_back(Face(5,2,8,3));
+    faces.emplace_back(Face(2,6,4,8));
+    faces.emplace_back(Face(6,1,7,4));
+    faces.emplace_back(Face(7,3,8,4));
+    faces.emplace_back(Face(1,6,2,5));
 }
 
 void Figure3D::createTetrahedron(std::string name, const ini::Configuration &conf) {
@@ -223,30 +186,10 @@ void Figure3D::createTetrahedron(std::string name, const ini::Configuration &con
 
 
     // read in faces
-    Face temp;
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(3);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(4);
-    temp.pointIndexes.emplace_back(3);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(4);
-    temp.pointIndexes.emplace_back(2);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(3);
-    temp.pointIndexes.emplace_back(4);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
+    faces.emplace_back(Face(1,2,3));
+    faces.emplace_back(Face(2,4,3));
+    faces.emplace_back(Face(1,4,2));
+    faces.emplace_back(Face(1,3,4));
 }
 
 void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf) {
@@ -519,8 +462,6 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
     for (int m = 0; m < n; m++) {
 
-        int oldSize = faces.size();
-
         std::vector <Face> temp;
 
         for (int i = 0; i < faces.size(); i++) {
@@ -612,25 +553,22 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
     int m = conf[name]["m"].as_int_or_die();
 
     for (int i=0;i<n;i++) {
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < m; j++) {
 
-            double u = (2*i*pi) / n;
-            double v = (2*j*pi) / n;
+            double u = (2*i*M_PI) / n;
+            double v = (2*j*M_PI) / n;
 
             points.emplace_back(Vector3D::point((R + r*std::cos(v)) * std::cos(u),
-                                                (R + r*std::cos(v)) * std::cos(u),
+                                                (R + r*std::cos(v)) * std::sin(u),
                                                  R + r*std::sin(v)));
         }
     }
 
     for (int i=0;i<n;i++) {
-        for (int j = 0; j < n; j++) {
-
-            faces.emplace_back()
+        for (int j = 0; j < m; j++) {
+            faces.emplace_back(Face(i*m + j, ((i+1)%n)*m + j, ((i+1)%n)*m  + (j + 1)%m, i*m + (j+1)%m));
         }
     }
-
-
 }
 
 // 3DLSystem functions
@@ -751,6 +689,8 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 
     else if (conf[name]["type"].as_string_or_die() == "Cylinder") createCylinder(name, conf);
 
+    else if (conf[name]["type"].as_string_or_die() == "Torus") createTorus(name, conf);
+
     else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
 
     else std::cerr << "unknown figure type" << std::endl;
@@ -806,7 +746,7 @@ const img::EasyImage Wireframe::drawLines2D() {
         if (line.p2.y < ymin) ymin = line.p2.y;
     }
     // calculating the imageSize of the image
-
+    std::cout << ymin << " , " << ymax << std::endl;
     double imagex = 0;
     double imagey = 0;
     double rangex = 0;
