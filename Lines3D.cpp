@@ -22,8 +22,8 @@ void Figure3D::rotateAroundY(Matrix &m, const double angle) {
     Matrix s;
     s(1, 1) = std::cos(angle);
     s(3, 3) = std::cos(angle);
-    s(1, 3) = std::sin(angle);
-    s(3, 1) = -std::sin(angle);
+    s(1, 3) = -std::sin(angle);
+    s(3, 1) = std::sin(angle);
     //std::cout << "rotation aroud Y s:" << std::endl; s.print(std::cout);
     m *= s;
 }
@@ -59,7 +59,6 @@ void Figure3D::translateMatrix(Matrix &m, const Vector3D &v) {
 void Figure3D::applyTransformations(const Matrix &m) {
     for (auto &p:points) {
         p *= m;
-
     }
 }
 
@@ -658,7 +657,6 @@ void Figure3D::calculateLines(const std::string &input) {
 // constructor and hulpfunctions
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // read information from configuration file
-    //std::cout << name << std::endl;
     rotateX = conf[name]["rotateX"].as_double_or_die();
     rotateY = conf[name]["rotateY"].as_double_or_die();
     rotateZ = conf[name]["rotateZ"].as_double_or_die();
@@ -746,7 +744,6 @@ const img::EasyImage Wireframe::drawLines2D() {
         if (line.p2.y < ymin) ymin = line.p2.y;
     }
     // calculating the imageSize of the image
-    std::cout << ymin << " , " << ymax << std::endl;
     double imagex = 0;
     double imagey = 0;
     double rangex = 0;
