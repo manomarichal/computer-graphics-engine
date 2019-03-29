@@ -779,11 +779,6 @@ const img::EasyImage Wireframe::drawLines2D() {
     return image;
 }
 
-void Wireframe::drawZbuffLine(ZBuffer &zBuf, img::EasyImage &img, const unsigned int x0, const unsigned int y0,
-                              const double z0, const unsigned int x1, const unsigned int y1, const double z1,
-                              const Color &color) {
-
-}
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();
