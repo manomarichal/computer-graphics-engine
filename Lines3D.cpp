@@ -637,9 +637,7 @@ void Figure3D::calculateLines(const std::string &input) {
             H = stackPoint.front().H;
             L = stackPoint.front().L;
             U = stackPoint.front().U;
-            for (int i = points.size() - 1; i > stackPoint.front().index; i--) {
-                points.erase(points.begin() + i);
-            }
+            points.emplace_back(Vector3D::point(points[stackPoint.front().index]));
             stackPoint.pop_front();
         } else if (system.get_alphabet().find(c) != system.get_alphabet().end()) {
             points.emplace_back(Vector3D::point(points[points.size() - 1] + H));
@@ -654,7 +652,7 @@ void Figure3D::calculateLines(const std::string &input) {
     recursionDepth--;
 }
 
-// constructor and hulpfunctions
+// constructor
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // read information from configuration file
     rotateX = conf[name]["rotateX"].as_double_or_die();
@@ -723,6 +721,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 
 }
 
+// draw functions
 const img::EasyImage Wireframe::drawLines2D() {
 
 
@@ -772,7 +771,6 @@ const img::EasyImage Wireframe::drawLines2D() {
     return image;
 }
 
-// draw functions
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();

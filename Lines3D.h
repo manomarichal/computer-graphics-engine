@@ -57,7 +57,7 @@ struct FaceWithPoints {
 };
 
 struct stackPoint3D {
-    Vector3D H, L, U;
+    Vector3D H, L, U, cPos;
     int index;
 };
 
