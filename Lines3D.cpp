@@ -706,7 +706,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
         doProjection(point, 1);
     }
 
-    std::cout << points.size() << " | " << points2D.size() << "\n";
     // create lines
     for (const Face &face:faces) {
         for (uint index = 0; index < face.pointIndexes.size(); index++) {
@@ -730,7 +729,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 }
 
 // draw functions
-const img::EasyImage Wireframe::drawLines2D() {
+const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
 
 
     double xmin = lines.front().p1.x;
@@ -771,24 +770,37 @@ const img::EasyImage Wireframe::drawLines2D() {
     // draw the lines
     img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
     image.clear(img::Color(backgroundcolor.red * 255, backgroundcolor.green * 255, backgroundcolor.blue * 255));
+
+    ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
+
     for (const Line2D &line: lines) {
-        image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
-                        roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
-                        img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));
+
+        if (zBuffered) {
+            image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
+                            roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
+                            img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));
+        }
+        image.draw_zbuf_line(zBuf,
+                             roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy), line.z1,
+                             roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy), line.z2,
+                             img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));
+
     }
     return image;
 }
 
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered) {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
+    std::string type = conf["General"]["type"].as_string_or_die();
+
 
     for (int k = 0; k < nrOfFigures; k++) {
         Figure3D temp("Figure" + std::to_string(k), conf);
         temp.addLines2D(lines);
     }
 
-    return drawLines2D();
+    return drawLines2D(zBuffered);
 }

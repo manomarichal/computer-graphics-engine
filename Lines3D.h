@@ -143,9 +143,9 @@ class Wireframe {
     Color backgroundcolor;
     int imageSize, nrOfFigures;
     listWithLines lines;
-    const img::EasyImage drawLines2D();
+    const img::EasyImage drawLines2D(bool zBuffered);
 public:
-    img::EasyImage drawWireFrame(const ini::Configuration &conf);
+    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered);
 };
 
 

@@ -256,17 +256,20 @@ void img::EasyImage::draw_line(unsigned int x0, unsigned int y0, unsigned int x1
 	}
 }
 
-void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, img::EasyImage &image, unsigned int x0, unsigned int y0,
+void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int y0,
 									double z0, unsigned int x1, unsigned int y1, double z1,
-									img::Color &color) {
+									Color color) {
 
 	assert(x0 < this->width && y0 < this->height);
 	assert(x1 < this->width && y1 < this->height);
+
 	if (x0 == x1)
 	{
 		//special case for x0 == x1
 		for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
 		{
+			if (!zBuf.compare(x0,i,x0,y0,x1,x1,z0,z1)) continue;
+
 			(*this)(x0, i) = color;
 		}
 	}
@@ -275,6 +278,8 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, img::EasyImage &image, unsign
 		//special case for y0 == y1
 		for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
 		{
+			if (!zBuf.compare(i,y0,x0,y0,x1,x1,z0,z1)) continue;
+
 			(*this)(i, y0) = color;
 		}
 	}
@@ -291,6 +296,8 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, img::EasyImage &image, unsign
 		{
 			for (unsigned int i = 0; i <= (x1 - x0); i++)
 			{
+				if (!zBuf.compare(x0+i, y0+m*i,x0,y0,x1,x1,z0,z1)) continue;
+
 				(*this)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
 			}
 		}
@@ -298,6 +305,8 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, img::EasyImage &image, unsign
 		{
 			for (unsigned int i = 0; i <= (y1 - y0); i++)
 			{
+				if (!zBuf.compare(x0+(i/m), y0+i ,x0,y0,x1,x1,z0,z1)) continue;
+
 				(*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
 			}
 		}
@@ -305,6 +314,8 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, img::EasyImage &image, unsign
 		{
 			for (unsigned int i = 0; i <= (y0 - y1); i++)
 			{
+				if (!zBuf.compare(x0-(i/m),y0-i,x0,y0,x1,x1,z0,z1)) continue;
+
 				(*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
 			}
 		}

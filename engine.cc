@@ -2,7 +2,6 @@
 #include "ini_configuration.h"
 #include "Lines3D.h"
 
-
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -11,16 +10,23 @@
 #include <limits>
 #include <cmath>
 
+
 img::EasyImage generate_image(const ini::Configuration &conf) {
     std::string type = conf["General"]["type"].as_string_or_die();
     if (type == "2DLSystem") {
         Lines2D lines(conf);
         return lines.drawLSystem2D();
     }
-    if (type == "Wireframe") {
+    else if (type == "Wireframe") {
         Wireframe lines;
-        return lines.drawWireFrame(conf);
+        return lines.drawWireFrame(conf, false);
     }
+    else if (type == "ZBufferedWireFrame") {
+        Wireframe lines;
+        return lines.drawWireFrame(conf, true);
+    }
+
+    std::cerr << "unknown figure type";
 };
 
 
