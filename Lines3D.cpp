@@ -706,16 +706,21 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
         doProjection(point, 1);
     }
 
+    std::cout << points.size() << " | " << points2D.size() << "\n";
     // create lines
     for (const Face &face:faces) {
         for (uint index = 0; index < face.pointIndexes.size(); index++) {
             Line2D lineTemp;
             lineTemp.p1.x = points2D[face.pointIndexes[index]].x;
             lineTemp.p1.y = points2D[face.pointIndexes[index]].y;
+            lineTemp.z1 = points[face.pointIndexes[index]].z;
+
 
             int n = face.pointIndexes[(index + 1) % face.pointIndexes.size()];
             lineTemp.p2.x = points2D[n].x;
             lineTemp.p2.y = points2D[n].y;
+            lineTemp.z2 = points[n].z;
+
 
             lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
             lines2D.emplace_back(lineTemp);
@@ -774,6 +779,11 @@ const img::EasyImage Wireframe::drawLines2D() {
     return image;
 }
 
+void Wireframe::drawZbuffLine(ZBuffer &zBuf, img::EasyImage &img, const unsigned int x0, const unsigned int y0,
+                              const double z0, const unsigned int x1, const unsigned int y1, const double z1,
+                              const Color &color) {
+
+}
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf) {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();

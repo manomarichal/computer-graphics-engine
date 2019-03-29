@@ -38,6 +38,8 @@ struct Line2D {
     Point2D p1;
     Point2D p2;
     Color color;
+
+    double z1, z2;
 };
 
 typedef std::list<Line2D> listWithLines;

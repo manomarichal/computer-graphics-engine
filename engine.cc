@@ -1,6 +1,5 @@
 #include "easy_image.h"
 #include "ini_configuration.h"
-#include "Lines2D.h"
 #include "Lines3D.h"
 
 

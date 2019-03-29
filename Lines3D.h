@@ -21,8 +21,6 @@
 #include "ini_configuration.h"
 #include "Lines2D.h"
 
-double posInf = std::numeric_limits<double>::infinity();
-double negInf = -std::numeric_limits<double>::infinity();
 
 struct Point3D {
     double x,y,z;
@@ -69,6 +67,10 @@ class ZBuffer: public std::vector<std::vector<double>>{
     std::vector<std::vector<double>> zVals;
 public:
     ZBuffer(const int width, const int height) {
+
+        double posInf = std::numeric_limits<double>::infinity();
+        double negInf = -std::numeric_limits<double>::infinity();
+
         for (int x=0;x<width;x++) {
             std::vector<double> temp;
             for (int y=0;y<height;y++) {
