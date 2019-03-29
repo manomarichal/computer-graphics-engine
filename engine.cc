@@ -13,6 +13,7 @@
 
 img::EasyImage generate_image(const ini::Configuration &conf) {
     std::string type = conf["General"]["type"].as_string_or_die();
+    std::cout << "Drawing a " << type << std::endl;
     if (type == "2DLSystem") {
         Lines2D lines(conf);
         return lines.drawLSystem2D();
@@ -21,12 +22,12 @@ img::EasyImage generate_image(const ini::Configuration &conf) {
         Wireframe lines;
         return lines.drawWireFrame(conf, false);
     }
-    else if (type == "ZBufferedWireFrame") {
+    else if (type == "ZBufferedWireframe") {
         Wireframe lines;
         return lines.drawWireFrame(conf, true);
     }
 
-    std::cerr << "unknown figure type";
+    std::cerr << "unknown figure type" << std::endl;
 };
 
 

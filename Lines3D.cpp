@@ -775,12 +775,12 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
 
     for (const Line2D &line: lines) {
 
-        if (zBuffered) {
+        if (!zBuffered) {
             image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
                             roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
                             img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));
         }
-        image.draw_zbuf_line(zBuf,
+        else image.draw_zbuf_line(zBuf,
                              roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy), line.z1,
                              roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy), line.z2,
                              img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));

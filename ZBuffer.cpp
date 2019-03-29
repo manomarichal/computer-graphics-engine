@@ -8,7 +8,6 @@ ZBuffer::ZBuffer(const int width, const int height) {
     double posInf = std::numeric_limits<double>::infinity();
     double negInf = -std::numeric_limits<double>::infinity();
 
-    std::cout << width << " | " << height << "\n";
     for (int x=0;x<width;x++) {
         std::vector<double> temp;
         for (int y = 0; y < height; y++) {
@@ -28,11 +27,16 @@ void ZBuffer::setVal(int x, int y, double val) {
 
 bool ZBuffer::compare(unsigned int x, unsigned int y, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, double zA, double zB) {
 
-    std::cout << "big val " << x0-x1 << std::endl;
+    //std::cout << "x = " << (x0-x1) << "y = " << (y0-y1) << std::endl;
+    double p;
 
-    double p = (x-x1)/(x0-x1);
-
-    std::cout << zA << " | " << zB << std::endl;
+    if ((y0-y1) != 0) {
+        p = (y-y1)/(y0-y1);
+    }
+    else if ((x0-x1) != 0) {
+        p  = (x-x1)/(x0-x1);
+    }
+    else p = 0;
 
     double temp = p/zA + (1-p)/zB;
 
