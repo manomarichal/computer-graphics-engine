@@ -712,8 +712,11 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
             Line2D lineTemp;
             lineTemp.p1.x = points2D[face.pointIndexes[index]].x;
             lineTemp.p1.y = points2D[face.pointIndexes[index]].y;
-            lineTemp.p2.x = points2D[face.pointIndexes[(index + 1) % face.pointIndexes.size()]].x;
-            lineTemp.p2.y = points2D[face.pointIndexes[(index + 1) % face.pointIndexes.size()]].y;
+
+            int n = face.pointIndexes[(index + 1) % face.pointIndexes.size()];
+            lineTemp.p2.x = points2D[n].x;
+            lineTemp.p2.y = points2D[n].y;
+
             lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
             lines2D.emplace_back(lineTemp);
         }

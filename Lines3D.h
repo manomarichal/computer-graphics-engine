@@ -15,10 +15,14 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <limits>
 #include "vector3d.h"
 #include "easy_image.h"
 #include "ini_configuration.h"
 #include "Lines2D.h"
+
+double posInf = std::numeric_limits<double>::infinity();
+double negInf = -std::numeric_limits<double>::infinity();
 
 struct Point3D {
     double x,y,z;
@@ -60,6 +64,29 @@ struct stackPoint3D {
     Vector3D H, L, U, cPos;
     int index;
 };
+
+class ZBuffer: public std::vector<std::vector<double>>{
+    std::vector<std::vector<double>> zVals;
+public:
+    ZBuffer(const int width, const int height) {
+        for (int x=0;x<width;x++) {
+            std::vector<double> temp;
+            for (int y=0;y<height;y++) {
+                temp.emplace_back(posInf);
+            }
+            zVals.emplace_back(temp);
+        }
+    };
+
+    double getZVal(int x, int y) {
+        return zVals[x][y];
+    }
+
+    void setVal(int x, int y, double val) {
+        zVals[x][y] = val;
+    }
+};
+
 
 class Figure3D {
 private:
@@ -144,6 +171,11 @@ class Wireframe {
     int imageSize, nrOfFigures;
     listWithLines lines;
     const img::EasyImage drawLines2D();
+    void drawZbuffLine(ZBuffer &zBuf, img::EasyImage &img, const unsigned int x0, const unsigned int y0,
+                      const double z0,
+                      const unsigned int x1, const unsigned int y1,
+                      const double z1,
+                      const Color &color);
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf);
 };
