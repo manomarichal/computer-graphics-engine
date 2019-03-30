@@ -268,9 +268,9 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		//special case for x0 == x1
 		for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
 		{
-			if (!zBuf.compare(x0,i,x0,y0,x1,x1,z0,z1)) continue;
-
-			(*this)(x0, i) = color;
+			if (zBuf.compare(x0,i,x0,y0,x1,x1,z0,z1)) {
+				(*this)(x0, i) = color;
+			}
 		}
 	}
 	else if (y0 == y1)
@@ -278,9 +278,9 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		//special case for y0 == y1
 		for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
 		{
-			if (!zBuf.compare(i,y0,x0,y0,x1,x1,z0,z1)) continue;
-
-			(*this)(i, y0) = color;
+			if (zBuf.compare(i,y0,x0,y0,x1,x1,z0,z1)) {
+				(*this)(i, y0) = color;
+			}
 		}
 	}
 	else
@@ -296,27 +296,27 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		{
 			for (unsigned int i = 0; i <= (x1 - x0); i++)
 			{
-				if (!zBuf.compare(x0+i, y0+m*i,x0,y0,x1,x1,z0,z1)) continue;
-
-				(*this)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
+				if (zBuf.compare(x0+i, (unsigned int) round(y0 + m * i) ,x0,y0,x1,x1,z0,z1)) {
+					(*this)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
+				}
 			}
 		}
 		else if (m > 1.0)
 		{
 			for (unsigned int i = 0; i <= (y1 - y0); i++)
 			{
-				if (!zBuf.compare(x0+(i/m), y0+i ,x0,y0,x1,x1,z0,z1)) continue;
-
-				(*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
+				if (zBuf.compare((unsigned int) round(x0 + (i / m)), y0+i ,x0,y0,x1,x1,z0,z1)) {
+					(*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
+				}
 			}
 		}
 		else if (m < -1.0)
 		{
 			for (unsigned int i = 0; i <= (y0 - y1); i++)
 			{
-				if (!zBuf.compare(x0-(i/m),y0-i,x0,y0,x1,x1,z0,z1)) continue;
-
-				(*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
+				if (zBuf.compare((unsigned int) round(x0 - (i / m)),y0-i,x0,y0,x1,x1,z0,z1)) {
+					(*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
+				}
 			}
 		}
 	}
