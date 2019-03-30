@@ -704,11 +704,9 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     if (zBuffTriangle) {
 
-        bool temp = faces.size();
+        int temp = faces.size();
 
         for (int i=0;i<temp;i++) {
-
-            if (faces[i].pointIndexes.size() == 3) continue;
 
             for (auto newFace: triangulate(faces[i])) {
 
@@ -716,10 +714,12 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
             }
         }
 
+        // delete old faces
         for (int i=0;i<temp;i++) {
 
             faces.erase(faces.begin());
         }
+
     }
 
     // generate transformation matrix
@@ -744,6 +744,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     // create lines
     for (const Face &face:faces) {
+
         for (uint index = 0; index < face.pointIndexes.size(); index++) {
 
             Line2D lineTemp;
