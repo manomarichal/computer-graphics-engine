@@ -128,6 +128,17 @@ void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
     faces.emplace_back(temp);
 }
 
+std::vector<Face> Figure3D::triangulate(Face &face) {
+    std::vector<Face> triangles;
+
+    for (int i=0;i<face.pointIndexes.size() - 2;i++) {
+        Face temp(face.pointIndexes[i], face.pointIndexes[i+1], face.pointIndexes[i+2]);
+        triangles.emplace_back(temp);
+    }
+
+    return triangles;
+}
+
 // create figure functions
 void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf) {
 
@@ -463,7 +474,7 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
         std::vector <Face> temp;
 
-        for (int i = 0; i < faces.size(); i++) {
+        for (unsigned int i = 0; i < faces.size(); i++) {
 
             int a, b, c, d, e, f;
 
@@ -653,7 +664,7 @@ void Figure3D::calculateLines(const std::string &input) {
 }
 
 // constructor
-Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
+Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle) {
     // read information from configuration file
     rotateX = conf[name]["rotateX"].as_double_or_die();
     rotateY = conf[name]["rotateY"].as_double_or_die();
@@ -691,14 +702,39 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
 
     else std::cerr << "unknown figure type" << std::endl;
 
+    if (zBuffTriangle) {
+
+        bool temp = faces.size();
+
+        for (int i=0;i<temp;i++) {
+
+            if (faces[i].pointIndexes.size() == 3) continue;
+
+            for (auto newFace: triangulate(faces[i])) {
+
+                faces.emplace_back(newFace);
+            }
+        }
+
+        for (int i=0;i<temp;i++) {
+
+            faces.erase(faces.begin());
+        }
+    }
+
     // generate transformation matrix
     Matrix m;
+
     scaleMatrix(m, scale);
+
     rotateAroundX(m, convertToRad(rotateX));
     rotateAroundY(m, convertToRad(rotateY));
     rotateAroundZ(m, convertToRad(rotateZ));
+
     translateMatrix(m, center);
+
     m *= eyePointTrans(eye);
+
     applyTransformations(m);
 
     // apply transfaormations on points
@@ -709,19 +745,23 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf) {
     // create lines
     for (const Face &face:faces) {
         for (uint index = 0; index < face.pointIndexes.size(); index++) {
+
             Line2D lineTemp;
+
             lineTemp.p1.x = points2D[face.pointIndexes[index]].x;
             lineTemp.p1.y = points2D[face.pointIndexes[index]].y;
             lineTemp.z1 = points[face.pointIndexes[index]].z;
 
 
             int n = face.pointIndexes[(index + 1) % face.pointIndexes.size()];
+
             lineTemp.p2.x = points2D[n].x;
             lineTemp.p2.y = points2D[n].y;
             lineTemp.z2 = points[n].z;
 
 
             lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
+
             lines2D.emplace_back(lineTemp);
         }
     }
@@ -789,7 +829,7 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
     return image;
 }
 
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered) {
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle) {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
@@ -798,7 +838,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
 
     for (int k = 0; k < nrOfFigures; k++) {
-        Figure3D temp("Figure" + std::to_string(k), conf);
+        Figure3D temp("Figure" + std::to_string(k), conf, zBuffTriangle);
         temp.addLines2D(lines);
     }
 

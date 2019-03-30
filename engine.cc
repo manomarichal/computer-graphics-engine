@@ -20,13 +20,16 @@ img::EasyImage generate_image(const ini::Configuration &conf) {
     }
     else if (type == "Wireframe") {
         Wireframe lines;
-        return lines.drawWireFrame(conf, false);
+        return lines.drawWireFrame(conf, false, false);
     }
     else if (type == "ZBufferedWireframe") {
         Wireframe lines;
-        return lines.drawWireFrame(conf, true);
+        return lines.drawWireFrame(conf, true, false);
     }
-
+    else if (type == "ZBuffering") {
+        Wireframe lines;
+        return lines.drawWireFrame(conf, false, true);
+    }
     std::cerr << "unknown figure type" << std::endl;
 };
 

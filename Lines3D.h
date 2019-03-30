@@ -76,6 +76,7 @@ private:
     //helper functions
     void createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints);
     void createDodecahedronFace(int a, int b, int c, int d, int e);
+    std::vector<Face> triangulate(Face &face);
 
     // variables and functions used by a 3DLSystem
     Vector3D H, L, U;
@@ -85,14 +86,13 @@ private:
     LParser::LSystem3D system;
     std::forward_list<stackPoint3D> stackPoint;
 
-    // helper functions for 3DLSystems
     void calculateLines(const std::string &input);
 
 
 public:
     const std::vector<Vector3D>& getPoints() const;
 
-    Figure3D(const std::string &name, const ini::Configuration &conf);
+    Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle);
 
     void rotateAroundX(Matrix &m, const double angle);
 
@@ -145,7 +145,7 @@ class Wireframe {
     listWithLines lines;
     const img::EasyImage drawLines2D(bool zBuffered);
 public:
-    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered);
+    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
 };
 
 
