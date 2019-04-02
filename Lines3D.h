@@ -63,15 +63,11 @@ struct stackPoint3D {
 
 class Figure3D {
 private:
-    // variables used by all 3D figures
-    Color color;
-    std::vector<Vector3D> points;
-    std::vector<Point2D> points2D;
+
     listWithLines lines2D;
     double rotateX, rotateY, rotateZ, scale;
     Vector3D center, eye;
     int nrOfPoints, nrOfLines;
-    std::vector<Face> faces;
 
     //helper functions
     void createDodecahedronPoint(int a, int b, int c, std::vector<Vector3D> &tempPoints);
@@ -90,6 +86,14 @@ private:
 
 
 public:
+    std::vector<Vector3D> points;
+
+    Color color;
+
+    std::vector<Face> faces;
+
+    std::vector<Point2D> points2D;
+
     const std::vector<Vector3D>& getPoints() const;
 
     Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle);
@@ -136,6 +140,7 @@ public:
     void createTorus(std::string name, const ini::Configuration &conf);
 
     void create3DLSystem(std::string name, const ini::Configuration &conf);
+
 };
 
 
@@ -144,6 +149,7 @@ class Wireframe {
     int imageSize, nrOfFigures;
     listWithLines lines;
     const img::EasyImage drawLines2D(bool zBuffered);
+    std::vector<Figure3D> figures;
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
 };

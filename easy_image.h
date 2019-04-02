@@ -20,7 +20,28 @@
 #include <stdint.h>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
+
+#include "vector3d.h"
 #include "ZBuffer.h"
+
+struct Point2D {
+
+	Point2D()= default;
+
+	Point2D(double ix, double ij) {
+		x = ix;
+		y = ij;
+	}
+
+    double x,y;
+};
+
+inline int roundToInt(double d){
+	return static_cast<int>(std::round(d));
+}
+
 /**
  * \brief The namespace of the EasyImage class
  */
@@ -223,6 +244,7 @@ namespace img
 			 * 	assert(y1 < getHeight())
 			 */
 			void draw_line(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, Color color);
+
 			void draw_zbuf_line(
 				ZBuffer &zBuf,
 				unsigned int x0, unsigned int y0,
@@ -230,6 +252,22 @@ namespace img
 				unsigned int x1, unsigned int y1,
 				double z1,
 				Color color);
+
+			void calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y);
+
+            void draw_zbuf_triangle(ZBuffer& zBuf,
+                             Vector3D const& A,
+                             Vector3D const& B,
+                             Vector3D const& C,
+
+                             double d,
+
+                             double dx,
+                             double dy,
+
+                             Color color);
+
+
 
 		private:
 			friend std::istream& operator>>(std::istream& in, EasyImage & image);

@@ -322,6 +322,55 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 	}
 
 }
+
+void img::EasyImage::calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y) {
+
+	if ( (y - P.y)*(y - Q.y) <= 0 and P.y != Q.y) {
+
+		xl = Q.x + (P.x - Q.x) * ( (y - Q.y)/(P.y - Q.y) );
+		xr = xl;
+
+	}
+}
+
+void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const Vector3D &B, const Vector3D &C,
+										double d, double dx, double dy, img::Color color) {
+
+	double posInf = std::numeric_limits<double>::infinity();
+	double negInf = -std::numeric_limits<double>::infinity();
+
+	Point2D a((d * A.x/-A.z) + dx, (d * A.y/-A.z) + dy);
+	Point2D b((d * B.x/-B.z) + dx, (d * B.y/-B.z) + dy);
+	Point2D c((d * C.x/-C.z) + dx, (d * C.y/-C.z) + dy);
+
+	int ymin = roundToInt(std::min(std::min(a.y, b.y), c.y));
+	int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y));
+
+    int xl; int xr;
+
+	for (int i=ymin; i<=ymax; i++) {
+
+		double xlab = posInf;
+		double xlbc = posInf;
+		double xlac = posInf;
+
+		double xrab = negInf;
+		double xrbc = negInf;
+		double xrac = negInf;
+
+		calculateXlXr(a,b,xlab, xrab,i);
+		calculateXlXr(a,c,xlac, xrac,i);
+		calculateXlXr(c,b,xlbc, xrbc,i);
+
+		xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
+		xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
+
+		std::cout << xl << " | " << xr << std::endl;
+        this->draw_line(xl,i,xr,i,color);
+	}
+
+
+}
 std::ostream& img::operator<<(std::ostream& out, EasyImage const& image)
 {
 

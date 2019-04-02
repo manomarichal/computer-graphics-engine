@@ -15,12 +15,10 @@
 #include <cmath>
 #include <stack>
 
-struct Point2D {
-    double x,y;
-};
 
 struct Color {
     double red, green, blue;
+
     void ini(const std::vector<double> &vec) {
         red = vec[0];
         green = vec[1];
@@ -35,6 +33,7 @@ struct Color {
 };
 
 struct Line2D {
+
     Point2D p1;
     Point2D p2;
     Color color;
@@ -43,10 +42,6 @@ struct Line2D {
 };
 
 typedef std::list<Line2D> listWithLines;
-
-inline int roundToInt(double d){
-    return static_cast<int>(std::round(d));
-}
 
 inline double convertToRad(double a) {
     return ((a * M_PI) / 180.0);
