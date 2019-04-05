@@ -326,8 +326,7 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 void img::EasyImage::calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y) {
 
 	if ( (y - P.y)*(y - Q.y) <= 0 and P.y != Q.y) {
-
-		xl = Q.x + (P.x - Q.x) * ( (y - Q.y)/(P.y - Q.y) );
+		xl = Q.x + ( (P.x - Q.x) * ( (y - Q.y)/(P.y - Q.y) ) );
 		xr = xl;
 
 	}
@@ -348,7 +347,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 
     int xl; int xr;
 
-	for (int i=ymin; i<=ymax; i++) {
+	for (int i=ymin+1; i<ymax; i++) {
 
 		double xlab = posInf;
 		double xlbc = posInf;
@@ -365,7 +364,6 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 		xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
 		xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
 
-		std::cout << xl << " | " << xr << std::endl;
         this->draw_line(xl,i,xr,i,color);
 	}
 

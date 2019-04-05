@@ -131,8 +131,8 @@ void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
 std::vector<Face> Figure3D::triangulate(Face &face) {
     std::vector<Face> triangles;
 
-    for (int i=0;i<face.pointIndexes.size() - 2;i++) {
-        Face temp(face.pointIndexes[i], face.pointIndexes[i+1], face.pointIndexes[i+2]);
+    for (int i=0;i<=face.pointIndexes.size() - 2;i++) {
+        Face temp(face.pointIndexes[0], face.pointIndexes[i], face.pointIndexes[i+1]);
         triangles.emplace_back(temp);
     }
 
@@ -472,9 +472,9 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
     for (int m = 0; m < n; m++) {
 
-        std::vector <Face> temp;
+        int oldSize = faces.size();
 
-        for (unsigned int i = 0; i < faces.size(); i++) {
+        for (unsigned int i = 0; i < oldSize; i++) {
 
             int a, b, c, d, e, f;
 
@@ -494,13 +494,16 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
                                                 (points[a].z + points[c].z) / 2));
             e = points.size() - 1;
 
-            temp.emplace_back(Face(a, d, e));
-            temp.emplace_back(Face(b, f, d));
-            temp.emplace_back(Face(c, e, f));
-            temp.emplace_back(Face(d, f, e));
+            faces.emplace_back(Face(a, d, e));
+            faces.emplace_back(Face(b, f, d));
+            faces.emplace_back(Face(c, e, f));
+            faces.emplace_back(Face(d, f, e));
         }
 
-        faces = temp;
+
+        for (int i=0;i<oldSize;i++){
+            faces.erase(faces.begin());
+        }
     }
 
     for (auto &point:points) {
@@ -711,7 +714,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
         for (int i=0;i<temp;i++) {
 
-            for (auto newFace: triangulate(faces[i])) {
+            for (auto &newFace: triangulate(faces[i])) {
 
                 faces.emplace_back(newFace);
             }
@@ -746,7 +749,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     }
 
 
-    //if (zBuffTriangle) return;
+    if (zBuffTriangle) return;
 
     // create lines
     for (const Face &face:faces) {
@@ -773,7 +776,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
         }
     }
 }
-
 
 // draw functions
 const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
@@ -862,9 +864,9 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         double ymin = INT64_MAX;
         double ymax = INT64_MIN;
 
-        for (auto figure:figures) {
+        for (auto &figure:figures) {
 
-            for (auto point:figure.points2D) {
+            for (auto &point:figure.points2D) {
 
                 if (point.x < xmin) xmin = point.x;
                 if (point.x > xmax) xmax = point.x;
@@ -894,9 +896,9 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
         ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
 
-        for (auto figure:figures) {
+        for (auto &figure:figures) {
 
-            for (auto face:figure.faces) {
+            for (auto &face:figure.faces) {
 
                 image.img::EasyImage::draw_zbuf_triangle(zBuf,
                                                          figure.points[face.pointIndexes[0]],
@@ -907,7 +909,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
             }
         }
-
+        return image;
     }
 
     return drawLines2D(zBuffered);
