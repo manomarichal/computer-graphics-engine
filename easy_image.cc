@@ -364,7 +364,19 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 		xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
 		xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
 
-        this->draw_line(xl,i,xr,i,color);
+		for (int x = xl;x<=xr;x++) {
+
+		    Point2D G;
+		    G.x = (a.x + b.x + c.x)/3;
+		    G.y = (a.y + b.y + c.y)/3;
+
+		    double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
+		    double dzdx;
+		    double dzdy;
+
+			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (i-G.y)*dzdy;
+
+		}
 	}
 
 

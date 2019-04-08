@@ -1,7 +1,7 @@
 //============================================================================
 // @name        : Lines3D.h
 // @author      : Mano Marichal
-// @date        :
+// @date        :   U LIMIT
 // @version     :
 // @copyright   : Computer Graphics - BA1 Informatica - Mano Marichal - University of Antwerp
 // @description : Class describing lines draw in 3D
@@ -474,6 +474,8 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
         int oldSize = faces.size();
 
+        std::vector<Face> temp;
+
         for (unsigned int i = 0; i < oldSize; i++) {
 
             int a, b, c, d, e, f;
@@ -494,16 +496,13 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
                                                 (points[a].z + points[c].z) / 2));
             e = points.size() - 1;
 
-            faces.emplace_back(Face(a, d, e));
-            faces.emplace_back(Face(b, f, d));
-            faces.emplace_back(Face(c, e, f));
-            faces.emplace_back(Face(d, f, e));
+            temp.emplace_back(Face(a, d, e));
+            temp.emplace_back(Face(b, f, d));
+            temp.emplace_back(Face(c, e, f));
+            temp.emplace_back(Face(d, f, e));
         }
 
-
-        for (int i=0;i<oldSize;i++){
-            faces.erase(faces.begin());
-        }
+        faces = temp;
     }
 
     for (auto &point:points) {
@@ -683,6 +682,8 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     color.ini(conf[name]["color"].as_double_tuple_or_die());
 
     // read in faces
+    std::cout << "Drawing a figure of type: " << conf[name]["type"].as_string_or_die() << std::endl;
+
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Cube") createCube(name, conf);
@@ -706,6 +707,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
 
     else std::cerr << "unknown figure type" << std::endl;
+
 
 
     if (zBuffTriangle) {

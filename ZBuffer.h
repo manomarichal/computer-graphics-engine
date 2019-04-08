@@ -20,6 +20,7 @@ class ZBuffer
         void setVal(int x, int y, double val);
 
         bool compare(unsigned int x, unsigned int y, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, double zA, double zB);
+
 };
 
 
