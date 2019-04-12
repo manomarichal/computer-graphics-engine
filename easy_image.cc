@@ -374,6 +374,8 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 		    double dzdx;
 		    double dzdy;
 
+		    //calculating of dzdx and dzdy
+
 			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (i-G.y)*dzdy;
 
 		}

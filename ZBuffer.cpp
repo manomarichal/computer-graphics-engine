@@ -21,8 +21,12 @@ double ZBuffer::getZVal(int x, int y) {
     return zVals[x][y];
 }
 
-void ZBuffer::setVal(int x, int y, double val) {
-    zVals[x][y] = val;
+bool ZBuffer::setVal(int x, int y, double val) {
+    if (val < zVals[x][y]) {
+        zVals[x][y] = val;
+        return true;
+    }
+    else return false;
 }
 
 bool ZBuffer::compare(unsigned int x, unsigned int y, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, double zA, double zB) {
@@ -36,10 +40,6 @@ bool ZBuffer::compare(unsigned int x, unsigned int y, unsigned int x0, unsigned 
 
     double temp = p/zA + (1-p)/zB;
 
-    if (temp < zVals[x][y]) {
-        zVals[x][y] = temp;
-        return true;
-    }
-    else return false;
+    return this->setVal(x,y,temp);
 }
 
