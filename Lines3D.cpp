@@ -532,6 +532,7 @@ void Figure3D::createCone(std::string name, const ini::Configuration &conf) {
 }
 
 void Figure3D::createCylinder(std::string name, const ini::Configuration &conf) {
+
     double h = conf[name]["height"].as_double_or_die();
     int n = conf[name]["n"].as_int_or_die();
 
@@ -559,6 +560,7 @@ void Figure3D::createCylinder(std::string name, const ini::Configuration &conf) 
 }
 
 void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
+
     double r = conf[name]["r"].as_double_or_die();
     double R = conf[name]["R"].as_double_or_die();
     int n = conf[name]["n"].as_int_or_die();
@@ -714,20 +716,16 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
         int temp = faces.size();
 
+        std::vector<Face> tempFaces;
         for (int i=0;i<temp;i++) {
 
             for (auto &newFace: triangulate(faces[i])) {
 
-                faces.emplace_back(newFace);
+                tempFaces.emplace_back(newFace);
             }
         }
 
-        // delete old faces
-        for (int i=0;i<temp;i++) {
-
-            faces.erase(faces.begin());
-
-        }
+        faces = tempFaces;
     }
 
     // generate transformation matrix
