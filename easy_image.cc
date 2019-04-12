@@ -347,7 +347,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 
     int xl; int xr;
 
-	for (int i=ymin+1; i<ymax; i++) {
+	for (int y=ymin+1; y<ymax; y++) {
 
 		double xlab = posInf;
 		double xlbc = posInf;
@@ -357,12 +357,23 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 		double xrbc = negInf;
 		double xrac = negInf;
 
-		calculateXlXr(a,b,xlab, xrab,i);
-		calculateXlXr(a,c,xlac, xrac,i);
-		calculateXlXr(c,b,xlbc, xrbc,i);
+		calculateXlXr(a,b,xlab, xrab,y);
+		calculateXlXr(a,c,xlac, xrac,y);
+		calculateXlXr(c,b,xlbc, xrbc,y);
 
 		xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
 		xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
+
+		//calculating of dzdx and dzdy
+		Vector3D u = Vector3D::vector(B.x - A.x, B.y - A.y, B.z - A.z);
+		Vector3D v = Vector3D::vector(C.x - A.x, C.y - A.y, C.z - A.z);
+
+		Vector3D w = Vector3D::vector(u.cross_equals(v));
+
+		double k = w.x * A.x + w.y * A.y + w.z * A.z;
+
+		double dzdx = (w.x) / (-d*k);
+		double dzdy = (w.y) / (-d*k);
 
 		for (int x = xl;x<=xr;x++) {
 
@@ -371,12 +382,10 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 		    G.y = (a.y + b.y + c.y)/3;
 
 		    double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
-		    double dzdx;
-		    double dzdy;
 
-		    //calculating of dzdx and dzdy
+			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
-			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (i-G.y)*dzdy;
+			if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = color;
 
 		}
 	}
