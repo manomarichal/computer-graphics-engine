@@ -472,11 +472,9 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
     for (int m = 0; m < n; m++) {
 
-        int oldSize = faces.size();
-
         std::vector<Face> temp;
 
-        for (unsigned int i = 0; i < oldSize; i++) {
+        for (unsigned int i = 0; i < faces.size(); i++) {
 
             int a, b, c, d, e, f;
 
@@ -574,7 +572,7 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
 
             points.emplace_back(Vector3D::point((R + r*std::cos(v)) * std::cos(u),
                                                 (R + r*std::cos(v)) * std::sin(u),
-                                                 R + r*std::sin(v)));
+                                                 r*std::sin(v)));
         }
     }
 
