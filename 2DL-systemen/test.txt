@@ -1,8 +1,0 @@
-[General]
-type = "2DLSystem"
-size = 1000
-backgroundcolor = (1, 1, 1)
-
-[2DLSystem]
-inputfile = 'test2.txt'
-color = (0, 0, 0)

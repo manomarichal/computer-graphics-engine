@@ -913,3 +913,5 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
     return drawLines2D(zBuffered);
 }
+
+
