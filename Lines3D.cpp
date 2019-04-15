@@ -131,12 +131,14 @@ void Figure3D::createDodecahedronFace(int a, int b, int c, int d, int e) {
 std::vector<Face> Figure3D::triangulate(Face &face) {
     std::vector<Face> triangles;
 
-    for (int i=0;i<=face.pointIndexes.size() - 2;i++) {
+    for (int i=1;i<=face.pointIndexes.size() - 2;i++) {
         Face temp(face.pointIndexes[0], face.pointIndexes[i], face.pointIndexes[i+1]);
         triangles.emplace_back(temp);
     }
 
+
     return triangles;
+
 }
 
 // create figure functions
@@ -712,10 +714,9 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     if (zBuffTriangle) {
 
-        int temp = faces.size();
-
         std::vector<Face> tempFaces;
-        for (int i=0;i<temp;i++) {
+
+        for (int i=0;i<faces.size();i++) {
 
             for (auto &newFace: triangulate(faces[i])) {
 

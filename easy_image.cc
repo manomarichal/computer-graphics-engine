@@ -342,8 +342,8 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 	Point2D b((d * B.x/-B.z) + dx, (d * B.y/-B.z) + dy);
 	Point2D c((d * C.x/-C.z) + dx, (d * C.y/-C.z) + dy);
 
-	int ymin = roundToInt(std::min(std::min(a.y, b.y), c.y));
-	int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y));
+	int ymin = roundToInt(std::min(std::min(a.y, b.y), c.y)+0.5);
+	int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y)-0.5);
 
     //calculating of dzdx and dzdy
     Vector3D u = Vector3D::vector(B.x - A.x, B.y - A.y, B.z - A.z);
@@ -358,7 +358,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 
     int xl; int xr;
 
-	for (int y=ymin+1; y<ymax; y++) {
+	for (int y=ymin; y<=ymax; y++) {
 
 		double xlab = posInf;
 		double xlbc = posInf;
@@ -389,7 +389,6 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 
 		}
 	}
-
 
 }
 std::ostream& img::operator<<(std::ostream& out, EasyImage const& image)
