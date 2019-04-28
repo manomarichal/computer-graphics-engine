@@ -142,7 +142,8 @@ std::vector<Face> Figure3D::triangulate(Face &face) {
 }
 
 // create figure functions
-void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf) {
+void Figure3D::createLineDrawing(std::string name, const ini::Configuration &conf)
+{
 
     nrOfPoints = conf[name]["nrPoints"].as_int_or_die();
     // read in points
@@ -164,12 +165,19 @@ void Figure3D::createLineDrawing(std::string name, const ini::Configuration &con
         faces.emplace_back(temp);
     }
 
+    for (Face &f:faces)
+    {
+        for(int &k:f.pointIndexes)
+        {
+            k -= 1;
+        }
+    }
 }
 
-void Figure3D::createCube(std::string name, const ini::Configuration &conf) {
+void Figure3D::createCube(std::string name, const ini::Configuration &conf)
+{
 
     // read in points
-    points.emplace_back(Vector3D::point(0, 0, 0)); // dummy
     points.emplace_back(Vector3D::point(1, -1, -1));
     points.emplace_back(Vector3D::point(-1, 1, -1));
     points.emplace_back(Vector3D::point(1, 1, 1));
@@ -186,11 +194,19 @@ void Figure3D::createCube(std::string name, const ini::Configuration &conf) {
     faces.emplace_back(Face(6,1,7,4));
     faces.emplace_back(Face(7,3,8,4));
     faces.emplace_back(Face(1,6,2,5));
+
+    for (Face &f:faces)
+    {
+        for(int &k:f.pointIndexes)
+        {
+            k -= 1;
+        }
+    }
 }
 
-void Figure3D::createTetrahedron(std::string name, const ini::Configuration &conf) {
+void Figure3D::createTetrahedron(std::string name, const ini::Configuration &conf)
+{
     // read in points
-    points.emplace_back(Vector3D::point(0, 0, 0)); // dummy
     points.emplace_back(Vector3D::point(1, -1, -1));
     points.emplace_back(Vector3D::point(-1, 1, -1));
     points.emplace_back(Vector3D::point(1, 1, 1));
@@ -198,16 +214,16 @@ void Figure3D::createTetrahedron(std::string name, const ini::Configuration &con
 
 
     // read in faces
-    faces.emplace_back(Face(1,2,3));
-    faces.emplace_back(Face(2,4,3));
-    faces.emplace_back(Face(1,4,2));
-    faces.emplace_back(Face(1,3,4));
+    faces.emplace_back(Face(0,1,2));
+    faces.emplace_back(Face(1,3,2));
+    faces.emplace_back(Face(0,3,1));
+    faces.emplace_back(Face(0,2,3));
 }
 
-void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf) {
+void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf)
+{
 
     // read in points
-    points.emplace_back(Vector3D::point(0, 0, 0)); // dummy
     points.emplace_back(Vector3D::point(1, 0, 0));
     points.emplace_back(Vector3D::point(0, 1, 0));
     points.emplace_back(Vector3D::point(-1, 0, 0));
@@ -217,57 +233,57 @@ void Figure3D::createOctahedron(std::string name, const ini::Configuration &conf
 
     // read in faces
     Face temp;
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(6);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(2);
-    temp.pointIndexes.emplace_back(3);
-    temp.pointIndexes.emplace_back(6);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(3);
-    temp.pointIndexes.emplace_back(4);
-    temp.pointIndexes.emplace_back(6);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(4);
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(6);
-    faces.emplace_back(temp);
-    temp.pointIndexes.clear();
-
-    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(0);
     temp.pointIndexes.emplace_back(1);
     temp.pointIndexes.emplace_back(5);
     faces.emplace_back(temp);
     temp.pointIndexes.clear();
 
-    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(1);
     temp.pointIndexes.emplace_back(2);
     temp.pointIndexes.emplace_back(5);
     faces.emplace_back(temp);
     temp.pointIndexes.clear();
 
-    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(2);
     temp.pointIndexes.emplace_back(3);
     temp.pointIndexes.emplace_back(5);
     faces.emplace_back(temp);
     temp.pointIndexes.clear();
 
-    temp.pointIndexes.emplace_back(1);
-    temp.pointIndexes.emplace_back(4);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(0);
     temp.pointIndexes.emplace_back(5);
     faces.emplace_back(temp);
     temp.pointIndexes.clear();
 
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(0);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(1);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(2);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
+
+    temp.pointIndexes.emplace_back(0);
+    temp.pointIndexes.emplace_back(3);
+    temp.pointIndexes.emplace_back(4);
+    faces.emplace_back(temp);
+    temp.pointIndexes.clear();
 }
 
-void Figure3D::createIsocahedron(std::string name, const ini::Configuration &conf) {
+void Figure3D::createIsocahedron(std::string name, const ini::Configuration &conf)
+{
     // read in points
     points.emplace_back(Vector3D::point(0, 0, sqrt(5) / 2));
     for (int i = 2; i <= 6; i++) {
@@ -413,7 +429,8 @@ void Figure3D::createIsocahedron(std::string name, const ini::Configuration &con
 
 }
 
-void Figure3D::createDodecahedron(std::string name, const ini::Configuration &conf) {
+void Figure3D::createDodecahedron(std::string name, const ini::Configuration &conf)
+{
 
     // read in points
     // generate isocahedron points
@@ -468,7 +485,8 @@ void Figure3D::createDodecahedron(std::string name, const ini::Configuration &co
     createDodecahedronFace(16, 7, 6, 15, 20);
 }
 
-void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
+void Figure3D::createSphere(std::string name, const ini::Configuration &conf)
+{
     int n = conf[name]["n"].as_int_or_die();
     createIsocahedron(name, conf);
 
@@ -511,7 +529,8 @@ void Figure3D::createSphere(std::string name, const ini::Configuration &conf) {
 
 }
 
-void Figure3D::createCone(std::string name, const ini::Configuration &conf) {
+void Figure3D::createCone(std::string name, const ini::Configuration &conf)
+{
     double h = conf[name]["height"].as_double_or_die();
     int n = conf[name]["n"].as_int_or_die();
 
@@ -531,7 +550,8 @@ void Figure3D::createCone(std::string name, const ini::Configuration &conf) {
     faces.emplace_back(temp);
 }
 
-void Figure3D::createCylinder(std::string name, const ini::Configuration &conf) {
+void Figure3D::createCylinder(std::string name, const ini::Configuration &conf)
+{
 
     double h = conf[name]["height"].as_double_or_die();
     int n = conf[name]["n"].as_int_or_die();
@@ -559,7 +579,8 @@ void Figure3D::createCylinder(std::string name, const ini::Configuration &conf) 
     faces.emplace_back(temp);
 }
 
-void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
+void Figure3D::createTorus(std::string name, const ini::Configuration &conf)
+{
 
     double r = conf[name]["r"].as_double_or_die();
     double R = conf[name]["R"].as_double_or_die();
@@ -585,6 +606,46 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf) {
     }
 }
 
+void Figure3D::createLinesOutOfFaces(std::string name, const ini::Configuration &conf)
+{
+    for (const Face &face:faces) {
+
+        for (uint index = 0; index < face.pointIndexes.size(); index++) {
+
+            Line2D lineTemp;
+
+            lineTemp.p1.x = points2D[face.pointIndexes[index]].x;
+            lineTemp.p1.y = points2D[face.pointIndexes[index]].y;
+            lineTemp.z1 = points[face.pointIndexes[index]].z;
+
+
+            int n = face.pointIndexes[(index + 1) % face.pointIndexes.size()];
+
+            lineTemp.p2.x = points2D[n].x;
+            lineTemp.p2.y = points2D[n].y;
+            lineTemp.z2 = points[n].z;
+
+
+            lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
+
+            lines2D.emplace_back(lineTemp);
+        }
+    }
+}
+
+void Figure3D::createTriangles() {
+    std::vector<Face> tempFaces;
+
+    for (int i=0;i<faces.size();i++) {
+
+        for (auto &newFace: triangulate(faces[i])) {
+
+            tempFaces.emplace_back(newFace);
+        }
+    }
+
+    faces = tempFaces;
+}
 // 3DLSystem functions
 void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf) {
     // parse Lsystem file
@@ -604,7 +665,8 @@ void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf)
     calculateLines(system.get_initiator());
 }
 
-void Figure3D::calculateLines(const std::string &input) {
+void Figure3D::calculateLines(const std::string &input)
+{
     //std::cout << input << std::endl;
     for (char c:input) {
         // check if the alphabet contains the symbol, if so replace it
@@ -668,7 +730,8 @@ void Figure3D::calculateLines(const std::string &input) {
 }
 
 // constructor
-Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle) {
+Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle)
+{
     // read information from configuration file
     rotateX = conf[name]["rotateX"].as_double_or_die();
     rotateY = conf[name]["rotateY"].as_double_or_die();
@@ -689,14 +752,19 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Cube") createCube(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "FractalCube") createCube(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Octahedron") createOctahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "FractalOctahedron") createOctahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Tetrahedron") createTetrahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "FractalTetrahedron") createTetrahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Icosahedron") createIsocahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "FractalIcosahedron") createIsocahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Dodecahedron") createDodecahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "FractalDodecahedron") createDodecahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Sphere") createSphere(name, conf);
 
@@ -710,22 +778,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     else std::cerr << "unknown figure type" << std::endl;
 
-
-
-    if (zBuffTriangle) {
-
-        std::vector<Face> tempFaces;
-
-        for (int i=0;i<faces.size();i++) {
-
-            for (auto &newFace: triangulate(faces[i])) {
-
-                tempFaces.emplace_back(newFace);
-            }
-        }
-
-        faces = tempFaces;
-    }
 
     // generate transformation matrix
     Matrix m;
@@ -749,35 +801,14 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
 
     if (zBuffTriangle) return;
-
-    // create lines
-    for (const Face &face:faces) {
-
-        for (uint index = 0; index < face.pointIndexes.size(); index++) {
-
-            Line2D lineTemp;
-
-            lineTemp.p1.x = points2D[face.pointIndexes[index]].x;
-            lineTemp.p1.y = points2D[face.pointIndexes[index]].y;
-            lineTemp.z1 = points[face.pointIndexes[index]].z;
+    else this->createLinesOutOfFaces(name, conf);
 
 
-            int n = face.pointIndexes[(index + 1) % face.pointIndexes.size()];
-
-            lineTemp.p2.x = points2D[n].x;
-            lineTemp.p2.y = points2D[n].y;
-            lineTemp.z2 = points[n].z;
-
-
-            lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
-
-            lines2D.emplace_back(lineTemp);
-        }
-    }
 }
 
 // draw functions
-const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
+const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
+{
 
     double xmin = lines.front().p1.x;
     double xmax = lines.front().p1.y;
@@ -836,7 +867,8 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered) {
     return image;
 }
 
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle) {
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle)
+{
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
@@ -844,19 +876,30 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     std::string type = conf["General"]["type"].as_string_or_die();
 
 
-    for (int k = 0; k < nrOfFigures; k++) {
+    for (int k = 0; k < nrOfFigures; k++)
+    {
+        std::string name = "Figure" + std::to_string(k);
 
-        Figure3D temp("Figure" + std::to_string(k), conf, zBuffTriangle);
+        Figure3D temp(name, conf, zBuffTriangle);
 
-        if (!zBuffTriangle) {
-            temp.addLines2D(lines);
+        figures.emplace_back(temp);
+
+        if (conf[name]["type"].as_string_or_die()[0] == 'F') // FRACTAL
+        {
+            isFractal(name, conf, zBuffTriangle);
         }
-        else figures.emplace_back(temp);
-
     }
 
+    if (!zBuffTriangle)
+    {
+        for (auto &f:figures)
+        {
+            f.addLines2D(lines);
+        }
+    }
 
-    if (zBuffTriangle) {
+    // ZBUF MET DRIEHOEKEN
+    else  {
 
         double xmin = INT64_MAX;
         double xmax = INT64_MIN;
@@ -864,6 +907,8 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         double ymax = INT64_MIN;
 
         for (auto &figure:figures) {
+
+            figure.createTriangles();
 
             for (auto &point:figure.points2D) {
 
@@ -914,4 +959,59 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     return drawLines2D(zBuffered);
 }
 
+void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool zBuf)
+{
+    int nrIterations = conf[name]["nrIterations"].as_int_or_die();
 
+    std::vector<Figure3D> temp;
+
+    for (int i=0;i<nrIterations;++i)
+    {
+
+        for (auto &figure:figures)
+        {
+            for(auto &newFigure:createFractal(name, conf, figure))
+            {
+                temp.emplace_back(newFigure);
+            }
+        }
+
+        figures = temp;
+        temp.clear();
+    }
+
+    for (auto &f:figures)
+    {
+        for (Vector3D &point:f.points)
+        {
+            f.doProjection(point, 1);
+        }
+
+        if (!zBuf) f.createLinesOutOfFaces(name,conf);
+    }
+}
+
+std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig)
+{
+    double scale = conf[name]["fractalScale"].as_double_or_die();
+
+    std::vector<Figure3D> fractal;
+
+    for (int i=0;i<fig.points.size();++i)
+    {
+        Figure3D tempFig;
+        tempFig.points = fig.points;
+        tempFig.faces = fig.faces;
+
+        Matrix m;
+        fig.scaleMatrix(m, 1/scale);
+        tempFig.applyTransformations(m);
+
+        Matrix p;
+        fig.translateMatrix(p, Vector3D::vector(fig.points[i] - tempFig.points[i]));
+        tempFig.applyTransformations(p);
+
+        fractal.emplace_back(tempFig);
+    }
+    return fractal;
+}

@@ -98,6 +98,8 @@ public:
 
     Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle);
 
+    Figure3D()=default;
+
     void rotateAroundX(Matrix &m, const double angle);
 
     void rotateAroundY(Matrix &m, const double angle);
@@ -119,6 +121,10 @@ public:
     void addLines2D(listWithLines &list);
 
     // create functions
+    void createTriangles();
+
+    void createLinesOutOfFaces(std::string name, const ini::Configuration &conf);
+
     void createCube(std::string name, const ini::Configuration &conf);
 
     void createLineDrawing(std::string name, const ini::Configuration &conf);
@@ -152,6 +158,8 @@ class Wireframe {
     std::vector<Figure3D> figures;
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
+    std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
+    void isFractal(std::string name, const ini::Configuration &conf, bool zBuf);
 };
 
 
