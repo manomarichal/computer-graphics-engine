@@ -191,6 +191,9 @@ std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Conf
     return fractal;
 }
 
+void Wireframe::createSmallCube(Figure3D &tempFig, int a, int b)
+{
+}
 std::vector<Figure3D> Wireframe::splitSponge(Figure3D &root)
 {
 
@@ -242,6 +245,36 @@ std::vector<Figure3D> Wireframe::splitSponge(Figure3D &root)
         splittedCubes.emplace_back(tempFig);
     }
 
+
+    for (int i=0;i<4;i++)
+    {
+        Figure3D tempFig;
+        tempFig.points = root.points;
+        tempFig.faces = root.faces;
+
+        Matrix m;
+        root.scaleMatrix(m, 1 / scale);
+        tempFig.applyTransformations(m);
+
+        int index;
+
+        if (i == 0) index = 5;
+        else if (i == 1) index = 4;
+        else if (i == 2) index = 7;
+        else if (i == 3) index = 6;
+
+        Matrix k;
+        root.translateMatrix(k, Vector3D::vector(root.points[i] - tempFig.points[i]));
+        tempFig.applyTransformations(k);
+
+        Matrix p;
+        root.translateMatrix(p, Vector3D::vector( Vector3D::point(root.points[i].x + (root.points[index].x - root.points[i].x)/3,
+                                                                  root.points[i].y + (root.points[index].y - root.points[i].y)/3,
+                                                                  root.points[i].z + (root.points[index].z - root.points[i].z)/3) - root.points[i]));
+        tempFig.applyTransformations(p);
+
+        splittedCubes.emplace_back(tempFig);
+    }
 
     return splittedCubes;
 

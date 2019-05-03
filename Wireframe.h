@@ -44,6 +44,8 @@ class Wireframe {
     // menger sponge helper functions
     std::vector<Figure3D> splitSponge(Figure3D &root);
 
+    void createSmallCube(Figure3D &tempFig, int a, int b);
+
 
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
