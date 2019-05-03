@@ -35,12 +35,18 @@ class Wireframe {
 
     const img::EasyImage drawZBufferedTriangles(const ini::Configuration &conf);
 
-public:
-    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
-
     std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
 
     void isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure);
+
+    void createMengerSponge(std::string name, const ini::Configuration &conf, Figure3D &fig);
+
+    // menger sponge helper functions
+    std::vector<Figure3D> splitSponge(Figure3D &root);
+
+
+public:
+    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
 
 };
 

@@ -129,41 +129,6 @@ const img::EasyImage Wireframe::drawZBufferedTriangles(const ini::Configuration 
     return image;
 }
 
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle)
-{
-    // read information from configuration file
-    imageSize = conf["General"]["size"].as_int_or_die();
-    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
-    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
-    std::string type = conf["General"]["type"].as_string_or_die();
-
-
-    for (int k = 0; k < nrOfFigures; k++)
-    {
-        std::string name = "Figure" + std::to_string(k);
-
-        Figure3D temp(name, conf, zBuffTriangle);
-
-        if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
-        {
-            isFractal(name, conf, zBuffTriangle, temp);
-        }
-        else figures.emplace_back(temp);
-
-    }
-
-    if (!zBuffTriangle)
-    {
-        for (auto &f:figures)
-        {
-            f.addLines2D(lines);
-        }
-    }
-    else return drawZBufferedTriangles(conf);
-
-    return drawLines2D(zBuffered);
-}
-
 void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure)
 {
     int nrIterations = conf[name]["nrIterations"].as_int_or_die();
@@ -201,7 +166,8 @@ void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool
     }
 }
 
-std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig) {
+std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig)
+{
     double scale = conf[name]["fractalScale"].as_double_or_die();
 
     std::vector <Figure3D> fractal;
@@ -221,5 +187,138 @@ std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Conf
 
         fractal.emplace_back(tempFig);
     }
+
     return fractal;
+}
+
+std::vector<Figure3D> Wireframe::splitSponge(Figure3D &root)
+{
+
+    std::vector<Figure3D> splittedCubes;
+
+    double scale = 3;
+
+    for (int i = 0; i < root.points.size(); ++i) {
+        Figure3D tempFig;
+        tempFig.points = root.points;
+        tempFig.faces = root.faces;
+
+        Matrix m;
+        root.scaleMatrix(m, 1 / scale);
+        tempFig.applyTransformations(m);
+
+        Matrix p;
+        root.translateMatrix(p, Vector3D::vector(root.points[i] - tempFig.points[i]));
+        tempFig.applyTransformations(p);
+
+        splittedCubes.emplace_back(tempFig);
+    }
+
+    for (int i = 0; i < root.points.size(); ++i) {
+
+        Figure3D tempFig;
+        tempFig.points = root.points;
+        tempFig.faces = root.faces;
+
+        Matrix m;
+        root.scaleMatrix(m, 1 / scale);
+        tempFig.applyTransformations(m);
+
+        int index = i + 1;
+        if (i == 3) index = 0;
+        if (i == 7) index = 4;
+
+
+        Matrix k;
+        root.translateMatrix(k, Vector3D::vector(root.points[i] - tempFig.points[i]));
+        tempFig.applyTransformations(k);
+
+        Matrix p;
+        root.translateMatrix(p, Vector3D::vector( Vector3D::point(root.points[i].x + (root.points[index].x - root.points[i].x)/3,
+                                                                  root.points[i].y + (root.points[index].y - root.points[i].y)/3,
+                                                                  root.points[i].z + (root.points[index].z - root.points[i].z)/3) - root.points[i]));
+        tempFig.applyTransformations(p);
+
+        splittedCubes.emplace_back(tempFig);
+    }
+
+
+    return splittedCubes;
+
+}
+void Wireframe::createMengerSponge(std::string name, const ini::Configuration &conf, Figure3D &root)
+{
+    int nrIterations = conf[name]["nrIterations"].as_int_or_die();
+
+    std::vector<Figure3D> temp;
+    std::vector<Figure3D> temp2;
+
+    temp.emplace_back(root);
+
+    for (int i=0;i<nrIterations;++i)
+    {
+
+        for (auto &figure:temp)
+        {
+            for(auto &newFigure:splitSponge(figure))
+            {
+                temp2.emplace_back(newFigure);
+            }
+        }
+
+        temp = temp2;
+        temp2.clear();
+    }
+
+    for (auto &f:temp)
+    {
+        for (Vector3D &point:f.points)
+        {
+            f.doProjection(point, 1);
+        }
+
+        f.createLinesOutOfFaces(name,conf);
+
+        figures.emplace_back(f);
+    }
+}
+
+
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle)
+{
+    // read information from configuration file
+    imageSize = conf["General"]["size"].as_int_or_die();
+    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
+    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
+    std::string type = conf["General"]["type"].as_string_or_die();
+
+
+    for (int k = 0; k < nrOfFigures; k++)
+    {
+        std::string name = "Figure" + std::to_string(k);
+
+        Figure3D temp(name, conf, zBuffTriangle);
+
+        if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
+        {
+            isFractal(name, conf, zBuffTriangle, temp);
+        }
+        else if (conf[name]["type"].as_string_or_die() == "MengerSponge")
+        {
+            createMengerSponge(name, conf, temp);
+        }
+        else figures.emplace_back(temp);
+
+    }
+
+    if (!zBuffTriangle)
+    {
+        for (auto &f:figures)
+        {
+            f.addLines2D(lines);
+        }
+    }
+    else return drawZBufferedTriangles(conf);
+
+    return drawLines2D(zBuffered);
 }

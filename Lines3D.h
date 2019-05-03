@@ -146,7 +146,6 @@ public:
     void createTorus(std::string name, const ini::Configuration &conf);
 
     void create3DLSystem(std::string name, const ini::Configuration &conf);
-
 };
 
 

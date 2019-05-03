@@ -177,23 +177,23 @@ void Figure3D::createLineDrawing(std::string name, const ini::Configuration &con
 void Figure3D::createCube(std::string name, const ini::Configuration &conf)
 {
 
-    // read in points
-    points.emplace_back(Vector3D::point(1, -1, -1));
     points.emplace_back(Vector3D::point(-1, 1, -1));
-    points.emplace_back(Vector3D::point(1, 1, 1));
-    points.emplace_back(Vector3D::point(-1, -1, 1));
-    points.emplace_back(Vector3D::point(1, 1, -1));
-    points.emplace_back(Vector3D::point(-1, -1, -1));
-    points.emplace_back(Vector3D::point(1, -1, 1));
     points.emplace_back(Vector3D::point(-1, 1, 1));
+    points.emplace_back(Vector3D::point(1, 1, 1));
+    points.emplace_back(Vector3D::point(1, 1, -1));
+    points.emplace_back(Vector3D::point(-1, -1, 1));
+    points.emplace_back(Vector3D::point(-1, -1, -1));
+    points.emplace_back(Vector3D::point(1, -1, -1));
+    points.emplace_back(Vector3D::point(1, -1, 1));
+
 
     // read in faces
-    faces.emplace_back(Face(1,5,3,7));
-    faces.emplace_back(Face(5,2,8,3));
-    faces.emplace_back(Face(2,6,4,8));
-    faces.emplace_back(Face(6,1,7,4));
-    faces.emplace_back(Face(7,3,8,4));
-    faces.emplace_back(Face(1,6,2,5));
+    faces.emplace_back(Face(7,4,3,8));
+    faces.emplace_back(Face(4,1,2,3));
+    faces.emplace_back(Face(1,6,5,2));
+    faces.emplace_back(Face(6,7,8,5));
+    faces.emplace_back(Face(8,3,2,5));
+    faces.emplace_back(Face(7,6,1,4));
 
     for (Face &f:faces)
     {
@@ -775,6 +775,8 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     else if (conf[name]["type"].as_string_or_die() == "Torus") createTorus(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "MengerSponge") createCube(name, conf);
 
     else std::cerr << "unknown figure type" << std::endl;
 
