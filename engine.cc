@@ -1,6 +1,7 @@
 #include "easy_image.h"
 #include "ini_configuration.h"
 #include "Lines3D.h"
+#include "Wireframe.h"
 
 #include <fstream>
 #include <iostream>

@@ -150,17 +150,4 @@ public:
 };
 
 
-class Wireframe {
-    Color backgroundcolor;
-    int imageSize, nrOfFigures;
-    listWithLines lines;
-    const img::EasyImage drawLines2D(bool zBuffered);
-    std::vector<Figure3D> figures;
-public:
-    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
-    std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
-    void isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure);
-};
-
-
 #endif //FUCKINGWERKCG_LINES3D_H
