@@ -159,7 +159,7 @@ class Wireframe {
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
     std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
-    void isFractal(std::string name, const ini::Configuration &conf, bool zBuf);
+    void isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure);
 };
 
 

@@ -828,15 +828,11 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
         if (line.p2.y < ymin) ymin = line.p2.y;
     }
     // calculating the imageSize of the image
-    double imagex = 0;
-    double imagey = 0;
-    double rangex = 0;
-    double rangey = 0;
 
-    rangex = xmax - xmin;
-    rangey = ymax - ymin;
-    imagex = imageSize * (rangex / std::max(rangex, rangey));
-    imagey = imageSize * (rangey / std::max(rangex, rangey));
+    double rangex = xmax - xmin;
+    double rangey = ymax - ymin;
+    double imagex = imageSize * (rangex / std::max(rangex, rangey));
+    double imagey = imageSize * (rangey / std::max(rangex, rangey));
     double d = 0.95 * (imagex / rangex);
 
 
@@ -882,12 +878,12 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
         Figure3D temp(name, conf, zBuffTriangle);
 
-        figures.emplace_back(temp);
-
-        if (conf[name]["type"].as_string_or_die()[0] == 'F') // FRACTAL
+        if (conf[name]["type"].as_string_or_die()[0] == 'F' and conf[name]["type"].as_string_or_die()[6] == 'B') // FRACTAL
         {
-            isFractal(name, conf, zBuffTriangle);
+            isFractal(name, conf, zBuffTriangle, temp);
         }
+        else figures.emplace_back(temp);
+
     }
 
     if (!zBuffTriangle)
@@ -926,6 +922,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         rangey = ymax - ymin;
         imagex = imageSize * (rangex / std::max(rangex, rangey));
         imagey = imageSize * (rangey / std::max(rangex, rangey));
+
         double d = 0.95 * (imagex / rangex);
 
 
@@ -959,28 +956,31 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     return drawLines2D(zBuffered);
 }
 
-void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool zBuf)
+void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure)
 {
     int nrIterations = conf[name]["nrIterations"].as_int_or_die();
 
     std::vector<Figure3D> temp;
+    std::vector<Figure3D> temp2;
+
+    temp.emplace_back(figure);
 
     for (int i=0;i<nrIterations;++i)
     {
 
-        for (auto &figure:figures)
+        for (auto &figure:temp)
         {
             for(auto &newFigure:createFractal(name, conf, figure))
             {
-                temp.emplace_back(newFigure);
+                temp2.emplace_back(newFigure);
             }
         }
 
-        figures = temp;
-        temp.clear();
+        temp = temp2;
+        temp2.clear();
     }
 
-    for (auto &f:figures)
+    for (auto &f:temp)
     {
         for (Vector3D &point:f.points)
         {
@@ -988,6 +988,8 @@ void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool
         }
 
         if (!zBuf) f.createLinesOutOfFaces(name,conf);
+
+        figures.emplace_back(f);
     }
 }
 
