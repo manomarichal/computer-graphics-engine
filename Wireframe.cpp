@@ -71,6 +71,64 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
     return image;
 }
 
+const img::EasyImage Wireframe::drawZBufferedTriangles(const ini::Configuration &conf)
+{
+    double xmin = INT64_MAX;
+    double xmax = INT64_MIN;
+    double ymin = INT64_MAX;
+    double ymax = INT64_MIN;
+
+    for (auto &figure:figures) {
+
+        figure.createTriangles();
+
+        for (auto &point:figure.points2D) {
+
+            if (point.x < xmin) xmin = point.x;
+            if (point.x > xmax) xmax = point.x;
+            if (point.y < ymin) ymin = point.y;
+            if (point.y > ymax) ymax = point.y;
+
+        }
+    }
+
+    double imagex; double imagey; double rangex; double rangey;
+
+    rangex = xmax - xmin;
+    rangey = ymax - ymin;
+    imagex = imageSize * (rangex / std::max(rangex, rangey));
+    imagey = imageSize * (rangey / std::max(rangex, rangey));
+
+    double d = 0.95 * (imagex / rangex);
+
+
+    // move line drawing
+    double dx, dy;
+    dx = (imagex / 2) - (d * ((xmin + xmax) / 2));
+    dy = (imagey / 2) - (d * ((ymin + ymax) / 2));
+
+    // make image and zbuffer
+    img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
+    image.clear(img::Color(backgroundcolor.red * 255, backgroundcolor.green * 255, backgroundcolor.blue * 255));
+
+    ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
+
+    for (auto &figure:figures) {
+
+        for (auto &face:figure.faces) {
+
+            image.img::EasyImage::draw_zbuf_triangle(zBuf,
+                                                     figure.points[face.pointIndexes[0]],
+                                                     figure.points[face.pointIndexes[1]],
+                                                     figure.points[face.pointIndexes[2]],
+                                                     d, dx, dy,
+                                                     img::Color(figure.color.red * 255, figure.color.green * 255, figure.color.blue * 255));
+
+        }
+    }
+    return image;
+}
+
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle)
 {
     // read information from configuration file
@@ -101,65 +159,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
             f.addLines2D(lines);
         }
     }
-
-        // ZBUF MET DRIEHOEKEN
-    else  {
-
-        double xmin = INT64_MAX;
-        double xmax = INT64_MIN;
-        double ymin = INT64_MAX;
-        double ymax = INT64_MIN;
-
-        for (auto &figure:figures) {
-
-            figure.createTriangles();
-
-            for (auto &point:figure.points2D) {
-
-                if (point.x < xmin) xmin = point.x;
-                if (point.x > xmax) xmax = point.x;
-                if (point.y < ymin) ymin = point.y;
-                if (point.y > ymax) ymax = point.y;
-
-            }
-        }
-
-        double imagex; double imagey; double rangex; double rangey;
-
-        rangex = xmax - xmin;
-        rangey = ymax - ymin;
-        imagex = imageSize * (rangex / std::max(rangex, rangey));
-        imagey = imageSize * (rangey / std::max(rangex, rangey));
-
-        double d = 0.95 * (imagex / rangex);
-
-
-        // move line drawing
-        double dx, dy;
-        dx = (imagex / 2) - (d * ((xmin + xmax) / 2));
-        dy = (imagey / 2) - (d * ((ymin + ymax) / 2));
-
-        // make image and zbuffer
-        img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
-        image.clear(img::Color(backgroundcolor.red * 255, backgroundcolor.green * 255, backgroundcolor.blue * 255));
-
-        ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
-
-        for (auto &figure:figures) {
-
-            for (auto &face:figure.faces) {
-
-                image.img::EasyImage::draw_zbuf_triangle(zBuf,
-                                                         figure.points[face.pointIndexes[0]],
-                                                         figure.points[face.pointIndexes[1]],
-                                                         figure.points[face.pointIndexes[2]],
-                                                         d, dx, dy,
-                                                         img::Color(figure.color.red * 255, figure.color.green * 255, figure.color.blue * 255));
-
-            }
-        }
-        return image;
-    }
+    else return drawZBufferedTriangles(conf);
 
     return drawLines2D(zBuffered);
 }
