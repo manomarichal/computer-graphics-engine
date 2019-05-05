@@ -1,4 +1,0 @@
-Fractals:
-- Fractals 82 en 55 moeten het er hetzelfde uitzien
-- fractal 44
-- mengersponge
