@@ -37,7 +37,7 @@ class Wireframe {
 
     std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
 
-    void isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure);
+    void isFractal(std::string name, const ini::Configuration &conf, Figure3D &figure);
 
     void createMengerSponge(std::string name, const ini::Configuration &conf, Figure3D &fig);
 
@@ -48,7 +48,7 @@ class Wireframe {
 
 
 public:
-    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle);
+    img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light);
 
 };
 

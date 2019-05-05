@@ -9,7 +9,8 @@
 #include "Lines3D.h"
 
 // transformation functions
-void Figure3D::rotateAroundX(Matrix &m, const double angle) {
+void Figure3D::rotateAroundX(Matrix &m, const double angle)
+{
     Matrix s;
     s(3, 3) = std::cos(angle);
     s(2, 2) = std::cos(angle);
@@ -17,8 +18,8 @@ void Figure3D::rotateAroundX(Matrix &m, const double angle) {
     s(2, 3) = std::sin(angle);
     m *= s;
 }
-
-void Figure3D::rotateAroundY(Matrix &m, const double angle) {
+void Figure3D::rotateAroundY(Matrix &m, const double angle)
+{
     Matrix s;
     s(1, 1) = std::cos(angle);
     s(3, 3) = std::cos(angle);
@@ -27,8 +28,8 @@ void Figure3D::rotateAroundY(Matrix &m, const double angle) {
     //std::cout << "rotation aroud Y s:" << std::endl; s.print(std::cout);
     m *= s;
 }
-
-void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
+void Figure3D::rotateAroundZ(Matrix &m, const double angle)
+{
     Matrix s;
     //std::cout << angle << std::endl;
     s(1, 1) = std::cos(angle);
@@ -38,16 +39,16 @@ void Figure3D::rotateAroundZ(Matrix &m, const double angle) {
     //std::cout << "rotation aroud Z s:" << std::endl; s.print(std::cout);
     m *= s;
 }
-
-void Figure3D::scaleMatrix(Matrix &m, const double scale) {
+void Figure3D::scaleMatrix(Matrix &m, const double scale)
+{
     Matrix s;
     s(1, 1) = scale;
     s(2, 2) = scale;
     s(3, 3) = scale;
     m *= s;
 }
-
-void Figure3D::translateMatrix(Matrix &m, const Vector3D &v) {
+void Figure3D::translateMatrix(Matrix &m, const Vector3D &v)
+{
     Matrix s;
     s(4, 1) = v.x;
     s(4, 2) = v.y;
@@ -55,17 +56,16 @@ void Figure3D::translateMatrix(Matrix &m, const Vector3D &v) {
     m *= s;
 
 }
-
-void Figure3D::applyTransformations(const Matrix &m) {
+void Figure3D::applyTransformations(const Matrix &m)
+{
     for (auto &p:points) {
         p *= m;
     }
 }
-
-const std::vector <Vector3D> &Figure3D::getPoints() const {
+const std::vector <Vector3D> &Figure3D::getPoints() const
+{
     return points;
 }
-
 void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r) {
     r = sqrt((point.x * point.x) + (point.y * point.y) + (point.z * point.z));
     theta = std::atan2(point.y, point.x);
@@ -173,7 +173,6 @@ void Figure3D::createLineDrawing(std::string name, const ini::Configuration &con
         }
     }
 }
-
 void Figure3D::createCube(std::string name, const ini::Configuration &conf)
 {
 
@@ -606,7 +605,7 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf)
     }
 }
 
-void Figure3D::createLinesOutOfFaces(std::string name, const ini::Configuration &conf)
+void Figure3D::createLinesOutOfFaces()
 {
     for (const Face &face:faces) {
 
@@ -625,8 +624,9 @@ void Figure3D::createLinesOutOfFaces(std::string name, const ini::Configuration 
             lineTemp.p2.y = points2D[n].y;
             lineTemp.z2 = points[n].z;
 
+            //std::cout << color.red << " " << color.blue << " " << color.green << std::endl;
 
-            lineTemp.color.ini(conf[name]["color"].as_double_tuple_or_die());
+            lineTemp.color.iniColor(color);
 
             lines2D.emplace_back(lineTemp);
         }
@@ -647,7 +647,8 @@ void Figure3D::createTriangles() {
     faces = tempFaces;
 }
 // 3DLSystem functions
-void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf) {
+void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf)
+{
     // parse Lsystem file
     std::string input = conf[name]["inputfile"].as_string_or_die();
     std::ifstream input_stream(input);
@@ -730,7 +731,7 @@ void Figure3D::calculateLines(const std::string &input)
 }
 
 // constructor
-Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle)
+Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle, bool light)
 {
     // read information from configuration file
     rotateX = conf[name]["rotateX"].as_double_or_die();
@@ -743,8 +744,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
                           conf["General"]["eye"].as_double_tuple_or_die()[1],
                           conf["General"]["eye"].as_double_tuple_or_die()[2]);
-
-    color.ini(conf[name]["color"].as_double_tuple_or_die());
 
     // read in faces
     std::cout << "Drawing a figure of type: " << conf[name]["type"].as_string_or_die() << std::endl;
@@ -795,15 +794,4 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     m *= eyePointTrans(eye);
 
     applyTransformations(m);
-
-    // apply transfaormations on points
-    for (Vector3D &point:points) {
-        doProjection(point, 1);
-    }
-
-
-    if (zBuffTriangle) return;
-    else this->createLinesOutOfFaces(name, conf);
-
-
 }

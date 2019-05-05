@@ -12,26 +12,32 @@
 #include <cmath>
 
 
-img::EasyImage generate_image(const ini::Configuration &conf) {
+img::EasyImage generate_image(const ini::Configuration &conf)
+{
     std::string type = conf["General"]["type"].as_string_or_die();
     std::cout << "Drawing a " << type << std::endl;
+
     if (type == "2DLSystem") {
         Lines2D lines(conf);
         return lines.drawLSystem2D();
     }
     else if (type == "Wireframe") {
         Wireframe lines;
-        return lines.drawWireFrame(conf, false, false);
+        return lines.drawWireFrame(conf, false, false, false);
     }
     else if (type == "ZBufferedWireframe") {
         Wireframe lines;
-        return lines.drawWireFrame(conf, true, false);
+        return lines.drawWireFrame(conf, true, false, false);
     }
     else if (type == "ZBuffering") {
         Wireframe lines;
-        return lines.drawWireFrame(conf, false, true);
+        return lines.drawWireFrame(conf, false, true, false);
     }
-    std::cerr << "unknown figure type" << std::endl;
+    else if (type == "LightedZBuffering") {
+        Wireframe lines;
+        return lines.drawWireFrame(conf, false, true, true);
+    }
+    std::cerr << "unknown figure type: " << type << std::endl;
 };
 
 

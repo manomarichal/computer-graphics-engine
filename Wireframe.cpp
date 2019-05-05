@@ -13,8 +13,6 @@
 
 #include "Wireframe.h"
 
-
-// draw functions
 const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
 {
 
@@ -70,7 +68,6 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
     }
     return image;
 }
-
 const img::EasyImage Wireframe::drawZBufferedTriangles(const ini::Configuration &conf)
 {
     double xmin = INT64_MAX;
@@ -128,8 +125,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles(const ini::Configuration 
     }
     return image;
 }
-
-void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool zBuf, Figure3D &figure)
+void Wireframe::isFractal(std::string name, const ini::Configuration &conf, Figure3D &figure)
 {
     int nrIterations = conf[name]["nrIterations"].as_int_or_die();
 
@@ -155,17 +151,10 @@ void Wireframe::isFractal(std::string name, const ini::Configuration &conf, bool
 
     for (auto &f:temp)
     {
-        for (Vector3D &point:f.points)
-        {
-            f.doProjection(point, 1);
-        }
-
-        if (!zBuf) f.createLinesOutOfFaces(name,conf);
-
+        f.color.iniColor(figure.color);
         figures.emplace_back(f);
     }
 }
-
 std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig)
 {
     double scale = conf[name]["fractalScale"].as_double_or_die();
@@ -190,7 +179,6 @@ std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Conf
 
     return fractal;
 }
-
 void Wireframe::createSmallCube(Figure3D &tempFig, int a, int b)
 {
 }
@@ -305,19 +293,13 @@ void Wireframe::createMengerSponge(std::string name, const ini::Configuration &c
 
     for (auto &f:temp)
     {
-        for (Vector3D &point:f.points)
-        {
-            f.doProjection(point, 1);
-        }
-
-        f.createLinesOutOfFaces(name,conf);
-
+        f.color.iniColor(root.color);
         figures.emplace_back(f);
     }
 }
 
 
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle)
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)
 {
     // read information from configuration file
     imageSize = conf["General"]["size"].as_int_or_die();
@@ -325,33 +307,48 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
     std::string type = conf["General"]["type"].as_string_or_die();
 
-
     for (int k = 0; k < nrOfFigures; k++)
     {
         std::string name = "Figure" + std::to_string(k);
 
-        Figure3D temp(name, conf, zBuffTriangle);
+        Figure3D temp(name, conf, zBuffTriangle, light);
+
+        temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
 
         if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
         {
-            isFractal(name, conf, zBuffTriangle, temp);
+            if (conf[name]["type"].as_string_or_die() == "FractalBuckyBall") return drawLines2D(zBuffered);
+
+            isFractal(name, conf, temp);
         }
         else if (conf[name]["type"].as_string_or_die() == "MengerSponge")
         {
             createMengerSponge(name, conf, temp);
         }
-        else figures.emplace_back(temp);
-
-    }
-
-    if (!zBuffTriangle)
-    {
-        for (auto &f:figures)
+        else
         {
-            f.addLines2D(lines);
+            figures.emplace_back(temp);
+            temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
         }
     }
-    else return drawZBufferedTriangles(conf);
+
+
+    for (int k = 0; k < figures.size(); k++)
+    {
+        for (Vector3D &point:figures[k].points)
+        {
+            figures[k].doProjection(point, 1);
+        }
+
+        if (!zBuffTriangle)
+        {
+            figures[k].createLinesOutOfFaces();
+
+            figures[k].addLines2D(lines);
+        }
+    }
+
+    if(zBuffTriangle) return drawZBufferedTriangles(conf);
 
     return drawLines2D(zBuffered);
 }

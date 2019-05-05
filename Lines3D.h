@@ -20,6 +20,32 @@
 #include "Lines2D.h"
 
 
+class Light
+{
+public:
+    //de ambiente licht component
+    Color ambientLight;
+    //de diffuse licht component
+    Color diffuseLight;
+    //de diffuse licht component
+    Color specularLight;
+};
+
+class InfLight: public Light
+{
+public:
+    //de richting waarin het
+    //licht schijnt
+    Vector3D ldVector;
+};
+
+class PointLight: public Light
+{
+public:
+    //de locatie van de puntbron
+    Vector3D location;
+};
+
 struct Point3D {
     double x,y,z;
     void iniPoint3D(const std::vector<double> &vec) {
@@ -62,8 +88,7 @@ struct stackPoint3D {
 };
 
 class Figure3D {
-private:
-
+public:
     listWithLines lines2D;
     double rotateX, rotateY, rotateZ, scale;
     Vector3D center, eye;
@@ -84,11 +109,15 @@ private:
 
     void calculateLines(const std::string &input);
 
-
-public:
     std::vector<Vector3D> points;
 
     Color color;
+
+    //light
+    Color ambientReflection;
+    Color diffuseReflection;
+    Color specularReflection;
+    double reflectionCoefficient;
 
     std::vector<Face> faces;
 
@@ -96,7 +125,7 @@ public:
 
     const std::vector<Vector3D>& getPoints() const;
 
-    Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle);
+    Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle, bool light);
 
     Figure3D()=default;
 
@@ -123,7 +152,7 @@ public:
     // create functions
     void createTriangles();
 
-    void createLinesOutOfFaces(std::string name, const ini::Configuration &conf);
+    void createLinesOutOfFaces();
 
     void createCube(std::string name, const ini::Configuration &conf);
 

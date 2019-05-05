@@ -30,6 +30,12 @@ struct Color {
         blue = b;
         green = g;
     }
+
+    void iniColor(Color &color) {
+        red = color.red;
+        blue = color.blue;
+        green = color.green;
+    }
 };
 
 struct Line2D {
