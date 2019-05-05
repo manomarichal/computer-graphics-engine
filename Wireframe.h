@@ -28,12 +28,13 @@ class Wireframe {
     Color backgroundcolor;
     int imageSize, nrOfFigures;
     listWithLines lines;
+    std::vector<std::vector<Figure3D>> allFigures;
     std::vector<Figure3D> figures;
 
     // draw figure functions
     const img::EasyImage drawLines2D(bool zBuffered);
 
-    const img::EasyImage drawZBufferedTriangles(const ini::Configuration &conf);
+    const img::EasyImage drawZBufferedTriangles();
 
     std::vector<Figure3D> createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig);
 
@@ -45,6 +46,9 @@ class Wireframe {
     std::vector<Figure3D> splitSponge(Figure3D &root);
 
     void createSmallCube(Figure3D &tempFig, int a, int b);
+
+    // light functions
+    void initLights(Figure3D &fig);
 
 
 public:

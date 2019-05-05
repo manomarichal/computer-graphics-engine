@@ -118,6 +118,7 @@ public:
     Color diffuseReflection;
     Color specularReflection;
     double reflectionCoefficient;
+    std::list<Light> lights;
 
     std::vector<Face> faces;
 

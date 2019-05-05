@@ -68,7 +68,7 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
     }
     return image;
 }
-const img::EasyImage Wireframe::drawZBufferedTriangles(const ini::Configuration &conf)
+const img::EasyImage Wireframe::drawZBufferedTriangles()
 {
     double xmin = INT64_MAX;
     double xmax = INT64_MIN;
@@ -149,11 +149,8 @@ void Wireframe::isFractal(std::string name, const ini::Configuration &conf, Figu
         temp2.clear();
     }
 
-    for (auto &f:temp)
-    {
-        f.color.iniColor(figure.color);
-        figures.emplace_back(f);
-    }
+    allFigures.emplace_back(temp);
+
 }
 std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Configuration &conf, Figure3D &fig)
 {
@@ -291,14 +288,8 @@ void Wireframe::createMengerSponge(std::string name, const ini::Configuration &c
         temp2.clear();
     }
 
-    for (auto &f:temp)
-    {
-        f.color.iniColor(root.color);
-        figures.emplace_back(f);
-    }
+    allFigures.emplace_back(temp);
 }
-
-
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)
 {
     // read information from configuration file
@@ -313,8 +304,6 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
         Figure3D temp(name, conf, zBuffTriangle, light);
 
-        temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
-
         if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
         {
             if (conf[name]["type"].as_string_or_die() == "FractalBuckyBall") return drawLines2D(zBuffered);
@@ -327,28 +316,39 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         }
         else
         {
-            figures.emplace_back(temp);
-            temp.color.ini(conf[name]["color"].as_double_tuple_or_die());
+            std::vector<Figure3D> f;
+            f.emplace_back(temp);
+            allFigures.emplace_back(f);
         }
     }
 
 
-    for (int k = 0; k < figures.size(); k++)
+    for (unsigned int n = 0; n < allFigures.size(); n++)
     {
-        for (Vector3D &point:figures[k].points)
-        {
-            figures[k].doProjection(point, 1);
-        }
+        std::string name = "Figure" + std::to_string(n);
 
-        if (!zBuffTriangle)
+        for (auto &figure:allFigures[n])
         {
-            figures[k].createLinesOutOfFaces();
+            // colors
+            figure.color.ini(conf[name]["color"].as_double_tuple_or_die());
 
-            figures[k].addLines2D(lines);
+            for (Vector3D &point:figure.points)
+            {
+                figure.doProjection(point, 1);
+            }
+
+            if (!zBuffTriangle)
+            {
+                figure.createLinesOutOfFaces();
+
+                figure.addLines2D(lines);
+            }
+
+            figures.emplace_back(figure);
         }
     }
 
-    if(zBuffTriangle) return drawZBufferedTriangles(conf);
+    if(zBuffTriangle) return drawZBufferedTriangles();
 
     return drawLines2D(zBuffered);
 }

@@ -624,8 +624,6 @@ void Figure3D::createLinesOutOfFaces()
             lineTemp.p2.y = points2D[n].y;
             lineTemp.z2 = points[n].z;
 
-            //std::cout << color.red << " " << color.blue << " " << color.green << std::endl;
-
             lineTemp.color.iniColor(color);
 
             lines2D.emplace_back(lineTemp);
