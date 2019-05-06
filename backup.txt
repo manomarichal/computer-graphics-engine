@@ -1,0 +1,46 @@
+void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const Vector3D &B, const Vector3D &C,
+										double d, double dx, double dy,
+										std::vector<double> ambientReflection, std::vector<double> diffuseReflection, std::vector<double> specularReflection,
+										double reflectionCoeff, std::vector<Light>& lights) {
+
+    /*
+    std::vector<double> colors = {0, 0 ,0};
+
+    for (auto &light:lights)
+    {
+        light.ambientLight*=ambientReflection;
+        colors[0]+=light.ambientLight.red;
+        colors[1]+=light.ambientLight.green;
+        colors[2]+=light.ambientLight.blue;
+    }
+     */
+
+    Color color(0, 0, 0);
+
+
+    void draw_zbuf_triangle(ZBuffer& zBuf,
+                                 Vector3D const& A,
+                                 Vector3D const& B,
+                                 Vector3D const& C,
+
+                                 double d,
+
+                                 double dx,
+                                 double dy,
+
+    							std::vector<double> ambientReflection,
+    							std::vector<double> diffuseReflection,
+    							std::vector<double> specularReflection,
+
+    							double reflectionCoeff,
+    							std::vector<Light>& lights);
+
+
+
+ e(zBuf,
+                                                      figure.points[face.pointIndexes[0]],
+                                                      figure.points[face.pointIndexes[1]],
+                                                      figure.points[face.pointIndexes[2]],
+                                                      d, dx, dy,
+                                                      figure.ambientReflection.asVector(), figure.diffuseReflection.asVector(), figure.specularReflection.asVector(),
+                                                      0, figure.lights);

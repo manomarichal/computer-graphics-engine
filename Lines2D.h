@@ -15,29 +15,6 @@
 #include <cmath>
 #include <stack>
 
-
-struct Color {
-    double red, green, blue;
-
-    void ini(const std::vector<double> &vec) {
-        red = vec[0];
-        green = vec[1];
-        blue = vec[2];
-    }
-
-    void iniDouble(const double &r, const double &g, const double &b) {
-        red = r;
-        blue = b;
-        green = g;
-    }
-
-    void iniColor(Color &color) {
-        red = color.red;
-        blue = color.blue;
-        green = color.green;
-    }
-};
-
 struct Line2D {
 
     Point2D p1;

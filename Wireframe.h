@@ -30,6 +30,7 @@ class Wireframe {
     listWithLines lines;
     std::vector<std::vector<Figure3D>> allFigures;
     std::vector<Figure3D> figures;
+    std::vector<Light> wireframeLights;
 
     // draw figure functions
     const img::EasyImage drawLines2D(bool zBuffered);
@@ -45,10 +46,8 @@ class Wireframe {
     // menger sponge helper functions
     std::vector<Figure3D> splitSponge(Figure3D &root);
 
-    void createSmallCube(Figure3D &tempFig, int a, int b);
-
     // light functions
-    void initLights(Figure3D &fig);
+    void initLights(const ini::Configuration &conf);
 
 
 public:

@@ -332,8 +332,33 @@ void img::EasyImage::calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &x
 	}
 }
 
-void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const Vector3D &B, const Vector3D &C,
-										double d, double dx, double dy, img::Color color) {
+void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
+										Vector3D const& A,
+										Vector3D const& B,
+										Vector3D const& C,
+
+										double d,
+
+										double dx,
+										double dy,
+
+										std::vector<double> ambientReflection,
+										std::vector<double> diffuseReflection,
+										std::vector<double> specularReflection,
+
+										double reflectionCoeff,
+										std::vector<Light>& lights) {
+
+	std::vector<double> ambientColor = {0, 0 ,0};
+
+	for (auto light:lights)
+	{
+		light.ambientLight*=ambientReflection;
+		ambientColor[0]+=light.ambientLight.red;
+		ambientColor[1]+=light.ambientLight.green;
+		ambientColor[2]+=light.ambientLight.blue;
+	}
+
 
 	double posInf = std::numeric_limits<double>::infinity();
 	double negInf = -std::numeric_limits<double>::infinity();
@@ -385,7 +410,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer &zBuf, const Vector3D &A, const 
 
 			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
-            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = color;
+            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(ambientColor[0]*255, ambientColor[1]*255, ambientColor[2]*255);
 
 		}
 	}

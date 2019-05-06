@@ -728,6 +728,14 @@ void Figure3D::calculateLines(const std::string &input)
     recursionDepth--;
 }
 
+// LIGHT
+void Figure3D::readLights(std::string name, const ini::Configuration &conf)
+{
+    std::vector<double> defaultTuple = {1, 1, 1};
+    Color temp;
+    temp.ini(conf[name]["ambientReflection"].as_double_tuple_or_default(defaultTuple));
+    ambientReflection.iniColor(temp);
+}
 // constructor
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle, bool light)
 {

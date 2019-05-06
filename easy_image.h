@@ -38,6 +38,77 @@ struct Point2D {
     double x,y;
 };
 
+struct Color {
+	double red, green, blue;
+
+	Color()
+	{
+		red = 0;
+		blue = 0;
+		green = 0;
+	}
+	void ini(const std::vector<double> &vec) {
+		red = vec[0];
+		green = vec[1];
+		blue = vec[2];
+	}
+
+	void iniDouble(const double &r, const double &g, const double &b) {
+		red = r;
+		blue = b;
+		green = g;
+	}
+
+	void iniColor(Color &color) {
+		red = color.red;
+		blue = color.blue;
+		green = color.green;
+	}
+	void operator+=(const std::vector<double> &right)
+	{
+		red += right[0];
+		blue += right[2];
+		green += right[1];
+	}
+	void operator*=(const std::vector<double> &right)
+	{
+		red *= right[0];
+		blue *= right[2];
+		green *= right[1];
+	}
+	std::vector<double> asVector()
+	{
+		std::vector<double> temp = {red, green, blue};
+		return temp;
+	}
+};
+
+class Light
+{
+public:
+	//de ambiente licht component
+	Color ambientLight;
+	//de diffuse licht component
+	Color diffuseLight;
+	//de diffuse licht component
+	Color specularLight;
+};
+
+class InfLight: public Light
+{
+public:
+	//de richting waarin het
+	//licht schijnt
+	Vector3D ldVector;
+};
+
+class PointLight: public Light
+{
+public:
+	//de locatie van de puntbron
+	Vector3D location;
+};
+
 inline int roundToInt(double d){
 	return static_cast<int>(std::round(d));
 }
@@ -265,7 +336,12 @@ namespace img
                              double dx,
                              double dy,
 
-                             Color color);
+							std::vector<double> ambientReflection,
+							std::vector<double> diffuseReflection,
+							std::vector<double> specularReflection,
+
+							double reflectionCoeff,
+							std::vector<Light>& lights);
 
 
 

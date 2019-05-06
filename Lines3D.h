@@ -20,31 +20,6 @@
 #include "Lines2D.h"
 
 
-class Light
-{
-public:
-    //de ambiente licht component
-    Color ambientLight;
-    //de diffuse licht component
-    Color diffuseLight;
-    //de diffuse licht component
-    Color specularLight;
-};
-
-class InfLight: public Light
-{
-public:
-    //de richting waarin het
-    //licht schijnt
-    Vector3D ldVector;
-};
-
-class PointLight: public Light
-{
-public:
-    //de locatie van de puntbron
-    Vector3D location;
-};
 
 struct Point3D {
     double x,y,z;
@@ -118,7 +93,8 @@ public:
     Color diffuseReflection;
     Color specularReflection;
     double reflectionCoefficient;
-    std::list<Light> lights;
+    std::vector<Light> lights;
+    void readLights(std::string name, const ini::Configuration &conf);
 
     std::vector<Face> faces;
 

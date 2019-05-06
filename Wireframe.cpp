@@ -113,14 +113,16 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     for (auto &figure:figures) {
 
         for (auto &face:figure.faces) {
-
+            std::vector<double> ambient = figure.ambientReflection.asVector();
+            std::vector<double> diffuse = figure.diffuseReflection.asVector();
+            std::vector<double> specular = figure.specularReflection.asVector();
             image.img::EasyImage::draw_zbuf_triangle(zBuf,
                                                      figure.points[face.pointIndexes[0]],
                                                      figure.points[face.pointIndexes[1]],
                                                      figure.points[face.pointIndexes[2]],
                                                      d, dx, dy,
-                                                     img::Color(figure.color.red * 255, figure.color.green * 255, figure.color.blue * 255));
-
+                                                     ambient, diffuse, specular,
+                                                     0, figure.lights);
         }
     }
     return image;
@@ -175,9 +177,6 @@ std::vector<Figure3D> Wireframe::createFractal(std::string name, const ini::Conf
     }
 
     return fractal;
-}
-void Wireframe::createSmallCube(Figure3D &tempFig, int a, int b)
-{
 }
 std::vector<Figure3D> Wireframe::splitSponge(Figure3D &root)
 {
@@ -290,6 +289,25 @@ void Wireframe::createMengerSponge(std::string name, const ini::Configuration &c
 
     allFigures.emplace_back(temp);
 }
+void Wireframe::initLights(const ini::Configuration &conf)
+{
+    std::vector<Light> light;
+    std::vector<double> defaultTuple = {1, 1, 1};
+
+    for (int k=0;k<conf["General"]["nrLights"].as_int_or_die();k++)
+    {
+        Color temp;
+        Light tempLight;
+
+        if (conf["Light" + std::to_string(k)]["ambientLight"].as_double_tuple_if_exists(defaultTuple))
+        {
+            temp.ini(conf["Light" + std::to_string(k)]["ambientLight"].as_double_tuple_or_die());
+            tempLight.ambientLight.iniColor(temp);
+            light.emplace_back(tempLight);
+        }
+    }
+    wireframeLights = light;
+}
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)
 {
     // read information from configuration file
@@ -297,6 +315,12 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
     std::string type = conf["General"]["type"].as_string_or_die();
+
+    // belichting
+    if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
+    {
+        initLights(conf);
+    }
 
     for (int k = 0; k < nrOfFigures; k++)
     {
@@ -330,7 +354,12 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         for (auto &figure:allFigures[n])
         {
             // colors
-            figure.color.ini(conf[name]["color"].as_double_tuple_or_die());
+            if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted") // FRACTAL
+            {
+                figure.lights = wireframeLights;
+                figure.readLights(name, conf);
+            }
+            else figure.color.ini(conf[name]["color"].as_double_tuple_or_die());
 
             for (Vector3D &point:figure.points)
             {
