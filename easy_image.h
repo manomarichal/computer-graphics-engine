@@ -76,6 +76,12 @@ struct Color {
 		blue *= right[2];
 		green *= right[1];
 	}
+	void operator*=(const double &d)
+	{
+		red *= d;
+		blue *= d;
+		green *= d;
+	}
 	std::vector<double> asVector()
 	{
 		std::vector<double> temp = {red, green, blue};
@@ -86,20 +92,15 @@ struct Color {
 class Light
 {
 public:
-	//de ambiente licht component
 	Color ambientLight;
-	//de diffuse licht component
 	Color diffuseLight;
-	//de diffuse licht component
 	Color specularLight;
-};
 
-class InfLight: public Light
-{
-public:
-	//de richting waarin het
-	//licht schijnt
+	bool difLight = false;
+	bool amLight = false;
+
 	Vector3D ldVector;
+	bool infinity;
 };
 
 class PointLight: public Light

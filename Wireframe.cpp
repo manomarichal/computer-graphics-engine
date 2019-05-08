@@ -292,19 +292,45 @@ void Wireframe::createMengerSponge(std::string name, const ini::Configuration &c
 void Wireframe::initLights(const ini::Configuration &conf)
 {
     std::vector<Light> light;
-    std::vector<double> defaultTuple = {1, 1, 1};
+    std::vector<double> defaultTuple = {-1, -1, -1};
 
     for (int k=0;k<conf["General"]["nrLights"].as_int_or_die();k++)
     {
         Color temp;
         Light tempLight;
+        std::string name = "Light" + std::to_string(k);
 
-        if (conf["Light" + std::to_string(k)]["ambientLight"].as_double_tuple_if_exists(defaultTuple))
+        // ambient light
+        if (conf[name]["ambientLight"].as_double_tuple_if_exists(defaultTuple))
         {
-            temp.ini(conf["Light" + std::to_string(k)]["ambientLight"].as_double_tuple_or_die());
+            temp.ini(conf[name]["ambientLight"].as_double_tuple_or_die());
             tempLight.ambientLight.iniColor(temp);
-            light.emplace_back(tempLight);
+            tempLight.amLight = true;
         }
+
+        // diffuse light
+        if (conf[name]["diffuseLight"].as_double_tuple_if_exists(defaultTuple))
+        {
+            temp.ini(conf[name]["diffuseLight"].as_double_tuple_or_default(defaultTuple));
+            tempLight.diffuseLight.iniColor(temp);
+            tempLight.infinity = conf[name]["infinity"].as_bool_or_default(false);
+            tempLight.difLight = true;
+            tempLight.ldVector = Vector3D::vector(conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[0],
+                                                  conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[1],
+                                                  conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[2]);
+
+            //tempLight.ldVector *= -1;
+
+            Figure3D t;
+            tempLight.ldVector *= t.eyePointTrans(Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                                                                        conf["General"]["eye"].as_double_tuple_or_die()[1],
+                                                                        conf["General"]["eye"].as_double_tuple_or_die()[2]));
+            tempLight.ldVector.normalise();
+        }
+
+
+        light.emplace_back(tempLight);
+
     }
     wireframeLights = light;
 }

@@ -132,7 +132,7 @@ std::vector<Face> Figure3D::triangulate(Face &face) {
     std::vector<Face> triangles;
 
     for (int i=1;i<=face.pointIndexes.size() - 2;i++) {
-        Face temp(face.pointIndexes[0], face.pointIndexes[i], face.pointIndexes[i+1]);
+        Face temp(face.pointIndexes[i+1], face.pointIndexes[i], face.pointIndexes[0]);
         triangles.emplace_back(temp);
     }
 
@@ -735,6 +735,8 @@ void Figure3D::readLights(std::string name, const ini::Configuration &conf)
     Color temp;
     temp.ini(conf[name]["ambientReflection"].as_double_tuple_or_default(defaultTuple));
     ambientReflection.iniColor(temp);
+    temp.ini(conf[name]["diffuseReflection"].as_double_tuple_or_default(defaultTuple));
+    diffuseReflection.iniColor(temp);
 }
 // constructor
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle, bool light)
