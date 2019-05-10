@@ -105,12 +105,6 @@ public:
 	bool infinity;
 };
 
-class PointLight: public Light
-{
-public:
-	//de locatie van de puntbron
-	Vector3D location;
-};
 
 inline int roundToInt(double d){
 	return static_cast<int>(std::round(d));

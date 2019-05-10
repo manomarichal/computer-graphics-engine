@@ -372,7 +372,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
     // licht
 	std::vector<double> color = {0, 0 ,0};
 
-	Vector3D wNormalized = Vector3D::normalise(w);
+	Vector3D n = Vector3D::normalise(w);
 
 	double cos;
 
@@ -432,20 +432,25 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 					double cosBeita = -1;
 
 					Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
-					Vector3D l = Vector3D::vector(light.ldVector - point) * -1;
 
-					l.normalise();
+					Vector3D l;
 
 					if (light.infinity)
 					{
-						cosAlpha = Vector3D::dot(light.ldVector, wNormalized);
+						l = light.ldVector * -1;
+						l.normalise();
+						cosAlpha = Vector3D::dot(l ,n);
 					}
-					else cosAlpha = Vector3D::dot(l, wNormalized);
+					else {
+                        l = Vector3D::vector(light.ldVector - point);
+						l.normalise();
+						cosAlpha = Vector3D::dot(l, n)*-1;
+					}
 
 
 					if (light.specLight)
 					{
-						Vector3D r = 2*cosAlpha*wNormalized - l;
+						Vector3D r = 2*cosAlpha*n - l;
 						cosBeita = Vector3D::dot(r, Vector3D::normalise(Vector3D::point(0 , 0, 0) - point));
 					}
 
@@ -456,7 +461,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 						color[1] += light.diffuseLight.green * diffuseReflection[1] * cosAlpha;
 						color[2] += light.diffuseLight.blue * diffuseReflection[2] * cosAlpha;
 					}
-
+					//std::cout << cosBeita << std::endl;
 					if (cosBeita > 0)
 					{
 						cosBeita = std::pow(cosBeita, reflectionCoeff);
