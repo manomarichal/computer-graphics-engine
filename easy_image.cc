@@ -347,7 +347,8 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 										std::vector<double> specularReflection,
 
 										double reflectionCoeff,
-										std::vector<Light>& lights) {
+										std::vector<Light>& lights,
+										Vector3D &eye) {
 
 
 
@@ -371,6 +372,10 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
     // licht
 	std::vector<double> color = {0, 0 ,0};
 
+	Vector3D wNormalized = Vector3D::normalise(w);
+
+	double cos;
+
 	for (auto light:lights)
 	{
 		if (light.amLight)
@@ -380,21 +385,8 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 			color[1] += light.ambientLight.green;
 			color[2] += light.ambientLight.blue;
 		}
-
-		if (light.difLight)
-		{
-			Vector3D wTemp = Vector3D::normalise(w);
-			double cos = wTemp.x * light.ldVector.x + wTemp.y * light.ldVector.y + wTemp.z * light.ldVector.z;
-			if (cos > 0)
-			{
-				color[0] += light.diffuseLight.red * diffuseReflection[0] * cos;
-				color[1] += light.diffuseLight.green * diffuseReflection[1] * cos;
-				color[2] += light.diffuseLight.blue * diffuseReflection[2] * cos;
-			}
-		}
 	}
 
-    //std::cout << color[0] << " "  << color[0] << " " << color[0] << std::endl;
     double k = w.x * A.x + w.y * A.y + w.z * A.z;
 
     double dzdx = (w.x) / (-d*k);
@@ -429,8 +421,59 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
-            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(color[0]*255, color[1]*255, color[2]*255);
+			// belichting
+			std::vector<double> colorTemp = color;
 
+			for (auto light:lights)
+			{
+				if (light.difLight)
+				{
+					double cosAlpha = -1;
+					double cosBeita = -1;
+
+					Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+					Vector3D l = Vector3D::vector(light.ldVector - point) * -1;
+
+					l.normalise();
+
+					if (light.infinity)
+					{
+						cosAlpha = Vector3D::dot(light.ldVector, wNormalized);
+					}
+					else cosAlpha = Vector3D::dot(l, wNormalized);
+
+
+					if (light.specLight)
+					{
+						Vector3D r = 2*cosAlpha*wNormalized - l;
+						cosBeita = Vector3D::dot(r, Vector3D::normalise(Vector3D::point(0 , 0, 0) - point));
+					}
+
+
+					if (cosAlpha > 0)
+					{
+						color[0] += light.diffuseLight.red * diffuseReflection[0] * cosAlpha;
+						color[1] += light.diffuseLight.green * diffuseReflection[1] * cosAlpha;
+						color[2] += light.diffuseLight.blue * diffuseReflection[2] * cosAlpha;
+					}
+
+					if (cosBeita > 0)
+					{
+						cosBeita = std::pow(cosBeita, reflectionCoeff);
+						color[0] += light.specularLight.red * specularReflection[0] * cosBeita;
+						color[1] += light.specularLight.green * specularReflection[1] * cosBeita;
+						color[2] += light.specularLight.blue * specularReflection[2] * cosBeita;
+					}
+
+				}
+			}
+
+			if (color[0] > 1) color[0] = 1;
+			if (color[1] > 1) color[1] = 1;
+			if (color[2] > 1) color[2] = 1;
+
+            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(color[0]*255, color[1]*255, color[2]*255);
+            color = colorTemp;
 		}
 	}
 

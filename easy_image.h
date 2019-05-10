@@ -98,8 +98,10 @@ public:
 
 	bool difLight = false;
 	bool amLight = false;
+    bool specLight = false;
 
-	Vector3D ldVector;
+
+    Vector3D ldVector;
 	bool infinity;
 };
 
@@ -342,7 +344,8 @@ namespace img
 							std::vector<double> specularReflection,
 
 							double reflectionCoeff,
-							std::vector<Light>& lights);
+							std::vector<Light>& lights,
+							Vector3D &eye);
 
 
 

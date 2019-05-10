@@ -73,6 +73,7 @@ void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double
 }
 
 Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
+
     double theta, phi, r;
     toPolar(eyepoint, theta, phi, r);
     Vector3D v = Vector3D::vector(0, 0, -r);
@@ -101,7 +102,7 @@ void Figure3D::doProjection(const Vector3D &point, const double d) {
     Point2D newPoint;
     newPoint.x = (d * point.x) / (-point.z);
     newPoint.y = (d * point.y) / (-point.z);
-    //std::cout << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
+    //std::cout << "\n" << "newpoint:" << newPoint.x << "|" << newPoint.y << std::endl;
     points2D.emplace_back(newPoint);
 }
 
@@ -732,11 +733,10 @@ void Figure3D::calculateLines(const std::string &input)
 void Figure3D::readLights(std::string name, const ini::Configuration &conf)
 {
     std::vector<double> defaultTuple = {1, 1, 1};
-    Color temp;
-    temp.ini(conf[name]["ambientReflection"].as_double_tuple_or_default(defaultTuple));
-    ambientReflection.iniColor(temp);
-    temp.ini(conf[name]["diffuseReflection"].as_double_tuple_or_default(defaultTuple));
-    diffuseReflection.iniColor(temp);
+    ambientReflection.ini(conf[name]["ambientReflection"].as_double_tuple_or_default(defaultTuple));
+    diffuseReflection.ini(conf[name]["diffuseReflection"].as_double_tuple_or_default(defaultTuple));
+    specularReflection.ini(conf[name]["specularReflection"].as_double_tuple_or_default(defaultTuple));
+    reflectionCoefficient = conf[name]["reflectionCoefficient"].as_double_or_default(0);
 }
 // constructor
 Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool zBuffTriangle, bool light)
@@ -754,7 +754,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
                           conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
     // read in faces
-    std::cout << "Drawing a figure of type: " << conf[name]["type"].as_string_or_die() << std::endl;
+    std::cout << " consisting of: " << conf[name]["type"].as_string_or_die() << ", ";
 
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
@@ -793,13 +793,16 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     scaleMatrix(m, scale);
 
+    m *= eyePointTrans(eye);
+
+    //std::cout << "\n" << m << std::endl;
+
     rotateAroundX(m, convertToRad(rotateX));
     rotateAroundY(m, convertToRad(rotateY));
     rotateAroundZ(m, convertToRad(rotateZ));
 
     translateMatrix(m, center);
 
-    m *= eyePointTrans(eye);
 
     applyTransformations(m);
 }

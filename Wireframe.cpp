@@ -16,10 +16,12 @@
 const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
 {
 
-    double xmin = lines.front().p1.x;
-    double xmax = lines.front().p1.y;
-    double ymin = lines.front().p1.x;
-    double ymax = lines.front().p1.y;
+    double xmin = INT64_MAX;
+    double xmax = INT64_MIN;
+    double ymin = INT64_MAX;
+    double ymax = INT64_MIN;
+
+
     for (const Line2D &line: lines) {
         // calculating xmin and xmax
         if (line.p1.x > xmax) xmax = line.p1.x;
@@ -34,6 +36,9 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
         if (line.p2.y < ymin) ymin = line.p2.y;
     }
     // calculating the imageSize of the image
+
+    std::cout << "\n" << xmin << " " << xmax;
+    std::cout << ymin << " " << ymax;
 
     double rangex = xmax - xmin;
     double rangey = ymax - ymin;
@@ -56,6 +61,7 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
     for (const Line2D &line: lines) {
 
         if (!zBuffered) {
+            //std::cout << "\nfrom" << line.p1.x << " | " << line.p1.y << "to" << line.p2.x << " | " << line.p2.y <<std::endl;
             image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
                             roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
                             img::Color(line.color.red * 255, line.color.green * 255, line.color.blue * 255));
@@ -122,7 +128,8 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      figure.points[face.pointIndexes[2]],
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
-                                                     0, figure.lights);
+                                                     figure.reflectionCoefficient, figure.lights,
+                                                     figure.eye);
         }
     }
     return image;
@@ -315,17 +322,27 @@ void Wireframe::initLights(const ini::Configuration &conf)
             tempLight.diffuseLight.iniColor(temp);
             tempLight.infinity = conf[name]["infinity"].as_bool_or_default(false);
             tempLight.difLight = true;
-            tempLight.ldVector = Vector3D::vector(conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[0],
-                                                  conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[1],
-                                                  conf[name]["direction"].as_double_tuple_or_default(defaultTuple)[2]);
 
-            //tempLight.ldVector *= -1;
+            if (tempLight.infinity)
+            {
+                tempLight.ldVector = Vector3D::vector(conf[name]["direction"].as_double_tuple_or_die()[0],
+                                                      conf[name]["direction"].as_double_tuple_or_die()[1],
+                                                      conf[name]["direction"].as_double_tuple_or_die()[2]);
+            }
+            else tempLight.ldVector = Vector3D::point(conf[name]["location"].as_double_tuple_or_die()[0],
+                                                       conf[name]["location"].as_double_tuple_or_die()[1],
+                                                       conf[name]["location"].as_double_tuple_or_die()[2]);
+
 
             Figure3D t;
+
             tempLight.ldVector *= t.eyePointTrans(Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
                                                                         conf["General"]["eye"].as_double_tuple_or_die()[1],
                                                                         conf["General"]["eye"].as_double_tuple_or_die()[2]));
-            tempLight.ldVector.normalise();
+            if (conf[name]["specularLight"].as_double_tuple_if_exists(defaultTuple))
+            {
+                tempLight.specLight = true;
+            }
         }
 
 
@@ -398,6 +415,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
                 figure.addLines2D(lines);
             }
+
 
             figures.emplace_back(figure);
         }
