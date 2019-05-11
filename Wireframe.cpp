@@ -173,7 +173,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     {
         for (auto &face:figure.faces)
         {
-            std::cout << "hello" << std::endl << std::flush;
+            //std::cout << "hello" << std::endl << std::flush;
 
             std::vector<double> ambient = figure.ambientReflection.asVector();
             std::vector<double> diffuse = figure.diffuseReflection.asVector();

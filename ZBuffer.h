@@ -11,7 +11,9 @@
 
 class ZBuffer
 {
-        std::vector<std::vector<double>> zVals;
+        std::vector<double> zVals;
+        int xW;
+        int yH;
     public:
         ZBuffer(const int width, const int height);
 

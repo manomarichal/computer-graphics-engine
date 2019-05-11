@@ -8,22 +8,19 @@ ZBuffer::ZBuffer(const int width, const int height) {
 
     double posInf = std::numeric_limits<double>::infinity();
 
-    for (int x=0;x<width;x++) {
-        std::vector<double> temp;
-        for (int y = 0; y < height; y++) {
-            temp.emplace_back(posInf);
-        }
-        zVals.emplace_back(temp);
-    }
+    xW = width;
+    yH = height;
+
+    zVals = std::vector<double>(xW*yH, posInf);
 }
 
 double ZBuffer::getZVal(int x, int y) {
-    return zVals[x][y];
+    return zVals.at(y*xW + x);
 }
 
 bool ZBuffer::setVal(int x, int y, double val) {
-    if (val < zVals[x][y]) {
-        zVals[x][y] = val;
+    if (val < zVals.at(y*xW + x)) {
+        zVals.at(y*xW + x) = val;
         return true;
     }
     else return false;
