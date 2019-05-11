@@ -14,7 +14,8 @@ ZBuffer::ZBuffer(const int width, const int height) {
     zVals = std::vector<double>(xW*yH, posInf);
 }
 
-double ZBuffer::getZVal(int x, int y) {
+double ZBuffer::getZVal(int x, int y) const
+{
     return zVals.at(y*xW + x);
 }
 

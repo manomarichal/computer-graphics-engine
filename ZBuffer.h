@@ -19,7 +19,7 @@ class ZBuffer
 
         ZBuffer()=default;
 
-        double getZVal(int x, int y);
+        double getZVal(int x, int y) const;
 
         bool setVal(int x, int y, double val);
 

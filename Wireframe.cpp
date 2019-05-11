@@ -173,11 +173,13 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     {
         for (auto &face:figure.faces)
         {
-            //std::cout << "hello" << std::endl << std::flush;
+
+            std::cout << "face!" << std::endl;
 
             std::vector<double> ambient = figure.ambientReflection.asVector();
             std::vector<double> diffuse = figure.diffuseReflection.asVector();
             std::vector<double> specular = figure.specularReflection.asVector();
+
             image.img::EasyImage::draw_zbuf_triangle(zBuf,
                                                      figure.points[face.pointIndexes[0]],
                                                      figure.points[face.pointIndexes[1]],

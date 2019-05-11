@@ -382,8 +382,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
     int xl; int xr;
 
 	for (int y=ymin; y<=ymax; y++) {
-
-		double xlab = posInf;
+        double xlab = posInf;
 		double xlbc = posInf;
 		double xlac = posInf;
 
@@ -400,7 +399,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 		for (int x = xl;x<=xr;x++) {
 
-		    Point2D G;
+            Point2D G;
 		    G.x = (a.x + b.x + c.x)/3;
 		    G.y = (a.y + b.y + c.y)/3;
 
@@ -411,7 +410,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 			// belichting en shaduw
 			std::vector<double> colorTemp = color;
 
-			for (auto light:lights)
+			for (const Light &light:lights)
 			{
 				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
 
@@ -419,7 +418,9 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
                 {
                     Vector3D E = point * Matrix::inv(eyePointTrans);
                     Vector3D L =  L * light.eye;
-                    Vector3D lAccent= Vector3D::point(L.x*light.d/(-L.z), L.y*light.d/(-L.z), 0);
+                    Point2D lAccent;
+                    lAccent.x = L.x*light.d/(-L.z);
+                    lAccent.y = L.y*light.d/(-L.z);
 
                     if (1/L.z > light.shadowMask.getZVal(lAccent.x, lAccent.y))
                     {
@@ -429,10 +430,9 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 				if (light.amLight)
 				{
-					light.ambientLight *= ambientReflection;
-					color[0] += light.ambientLight.red;
-					color[1] += light.ambientLight.green;
-					color[2] += light.ambientLight.blue;
+					color[0] += light.ambientLight.red*ambientReflection[0];
+					color[1] += light.ambientLight.green*ambientReflection[1];
+					color[2] += light.ambientLight.blue*ambientReflection[2];
 				}
 
 				if (light.difLight)
