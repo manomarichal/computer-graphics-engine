@@ -74,8 +74,61 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
     }
     return image;
 }
+void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
+{
+    double xmin = INT64_MAX;
+    double xmax = INT64_MIN;
+    double ymin = INT64_MAX;
+    double ymax = INT64_MIN;
+
+    for (auto &figure:figures) {
+
+        figure.createTriangles();
+
+        for (auto &point:figure.points2D) {
+
+            if (point.x < xmin) xmin = point.x;
+            if (point.x > xmax) xmax = point.x;
+            if (point.y < ymin) ymin = point.y;
+            if (point.y > ymax) ymax = point.y;
+
+        }
+    }
+
+    double imagex;
+    double imagey;
+    double rangex;
+    double rangey;
+
+    rangex = xmax - xmin;
+    rangey = ymax - ymin;
+    imagex = imageSize * (rangex / std::max(rangex, rangey));
+    imagey = imageSize * (rangey / std::max(rangex, rangey));
+
+    light.d = 0.95 * (imagex / rangex);
+
+
+    // move line drawing
+    double dx, dy;
+    dx = (imagex / 2) - (light.d * ((xmin + xmax) / 2));
+    dy = (imagey / 2) - (light.d * ((ymin + ymax) / 2));
+
+    light.shadowMask = ZBuffer(imagex, imagey);
+
+    for (auto &figure:figs) {
+        for (auto &face:figure.faces) {
+            img::EasyImage::draw_zbuf_triangle_colorless(light.shadowMask,
+                                                         figure.points[face.pointIndexes[0]],
+                                                         figure.points[face.pointIndexes[1]],
+                                                         figure.points[face.pointIndexes[2]],
+                                                         light.d, dx, dy,
+                                                         figure.eye);
+        }
+    }
+}
 const img::EasyImage Wireframe::drawZBufferedTriangles()
 {
+
     double xmin = INT64_MAX;
     double xmax = INT64_MIN;
     double ymin = INT64_MAX;
@@ -116,9 +169,12 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
 
     ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
 
-    for (auto &figure:figures) {
+    for (auto &figure:figures)
+    {
+        for (auto &face:figure.faces)
+        {
+            std::cout << "hello" << std::endl << std::flush;
 
-        for (auto &face:figure.faces) {
             std::vector<double> ambient = figure.ambientReflection.asVector();
             std::vector<double> diffuse = figure.diffuseReflection.asVector();
             std::vector<double> specular = figure.specularReflection.asVector();
@@ -128,8 +184,8 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      figure.points[face.pointIndexes[2]],
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
-                                                     figure.reflectionCoefficient, figure.lights,
-                                                     figure.eye);
+                                                     figure.reflectionCoefficient, wireframeLights,
+                                                     Figure3D::eyePointTrans(eye), applyShadows);
         }
     }
     return image;
@@ -334,11 +390,8 @@ void Wireframe::initLights(const ini::Configuration &conf)
                                                        conf[name]["location"].as_double_tuple_or_die()[2]);
 
 
-            Figure3D t;
+            tempLight.ldVector *= Figure3D::eyePointTrans(eye);
 
-            tempLight.ldVector *= t.eyePointTrans(Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
-                                                                        conf["General"]["eye"].as_double_tuple_or_die()[1],
-                                                                        conf["General"]["eye"].as_double_tuple_or_die()[2]));
             if (conf[name]["specularLight"].as_double_tuple_if_exists(defaultTuple))
             {
                 tempLight.specularLight.ini(conf[name]["specularLight"].as_double_tuple_or_die());
@@ -359,6 +412,11 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
     backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
     std::string type = conf["General"]["type"].as_string_or_die();
+    applyShadows = conf["General"]["shadowEnabled"].as_bool_or_default(false);
+
+    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                          conf["General"]["eye"].as_double_tuple_or_die()[1],
+                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
     // belichting
     if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
@@ -390,6 +448,37 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         }
     }
 
+    // CREATING SHADOWMASKS
+    if (applyShadows)
+    {
+        for (auto &light:wireframeLights)
+        {
+            std::vector<Figure3D> figs;
+
+            light.eye = Figure3D::eyePointTrans(light.ldVector);
+
+            for (unsigned int n = 0; n < allFigures.size(); n++)
+            {
+                std::string name = "Figure" + std::to_string(n);
+
+                for (auto figure:allFigures[n])
+                {
+                    figure.applyTransformations(light.eye);
+
+                    for (Vector3D &point:figure.points)
+                    {
+                        figure.doProjection(point, 1);
+                    }
+
+                    figs.emplace_back(figure);
+                }
+            }
+            createLightZBuffer(figs, light);
+        }
+    }
+
+    // FIGURES
+    Matrix m = Figure3D::eyePointTrans(eye);
 
     for (unsigned int n = 0; n < allFigures.size(); n++)
     {
@@ -397,19 +486,22 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
         for (auto &figure:allFigures[n])
         {
+            figure.applyTransformations(m);
+
             // colors
-            if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
+            if ((conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted"))
             {
-                figure.lights = wireframeLights;
                 figure.readLights(name, conf);
             }
+
             else {
                 Light tempLight;
                 tempLight.ambientLight.ini(conf[name]["color"].as_double_tuple_or_die());
                 tempLight.amLight = true;
-                figure.lights = {tempLight};
+                wireframeLights = {tempLight};
                 figure.ambientReflection.ini({1, 1, 1});
             }
+
 
             for (Vector3D &point:figure.points)
             {
@@ -422,7 +514,6 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
                 figure.addLines2D(lines);
             }
-
 
             figures.emplace_back(figure);
         }

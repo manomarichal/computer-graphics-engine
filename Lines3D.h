@@ -93,7 +93,6 @@ public:
     Color diffuseReflection;
     Color specularReflection;
     double reflectionCoefficient;
-    std::vector<Light> lights;
     void readLights(std::string name, const ini::Configuration &conf);
 
     std::vector<Face> faces;
@@ -106,21 +105,21 @@ public:
 
     Figure3D()=default;
 
-    void rotateAroundX(Matrix &m, const double angle);
+    static void rotateAroundX(Matrix &m, const double angle);
 
-    void rotateAroundY(Matrix &m, const double angle);
+    static void rotateAroundY(Matrix &m, const double angle);
 
-    void rotateAroundZ(Matrix &m, const double angle);
+    static void rotateAroundZ(Matrix &m, const double angle);
 
-    void scaleMatrix(Matrix &m, const double scale);
+    static void scaleMatrix(Matrix &m, const double scale);
 
-    void translateMatrix(Matrix &m, const Vector3D &v);
+    static void translateMatrix(Matrix &m, const Vector3D &v);
 
     void applyTransformations(const Matrix &m);
 
-    Matrix eyePointTrans(const Vector3D &eyepoint);
+    static Matrix eyePointTrans(const Vector3D &eyepoint);
 
-    void toPolar(const Vector3D &point, double &theta, double &phi, double &r);
+    static void toPolar(const Vector3D &point, double &theta, double &phi, double &r);
 
     void  doProjection(const Vector3D &point, const double d);
 

@@ -15,6 +15,8 @@ class ZBuffer
     public:
         ZBuffer(const int width, const int height);
 
+        ZBuffer()=default;
+
         double getZVal(int x, int y);
 
         bool setVal(int x, int y, double val);

@@ -103,6 +103,12 @@ public:
 
     Vector3D ldVector;
 	bool infinity;
+
+	//shaduw
+	ZBuffer shadowMask;
+	Matrix eye;
+
+	double d;
 };
 
 
@@ -321,7 +327,7 @@ namespace img
 				double z1,
 				Color color);
 
-			void calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y);
+			static void calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y);
 
             void draw_zbuf_triangle(ZBuffer& zBuf,
                              Vector3D const& A,
@@ -339,7 +345,19 @@ namespace img
 
 							double reflectionCoeff,
 							std::vector<Light>& lights,
-							Vector3D &eye);
+							const Matrix &eyePointTrans, bool enableShadows);
+
+        	static void draw_zbuf_triangle_colorless(ZBuffer& zBuf,
+                                    Vector3D const& A,
+                                    Vector3D const& B,
+                                    Vector3D const& C,
+
+                                    double d,
+
+                                    double dx,
+                                    double dy,
+
+                                    Vector3D &eye);
 
 
 

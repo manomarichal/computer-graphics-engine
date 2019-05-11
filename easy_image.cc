@@ -348,7 +348,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 										double reflectionCoeff,
 										std::vector<Light>& lights,
-										Vector3D &eye) {
+										const Matrix &eyePointTrans, bool enableShadows) {
 
 
 
@@ -371,22 +371,9 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
     // licht
 	std::vector<double> color = {0, 0 ,0};
-
 	Vector3D n = Vector3D::normalise(w);
 
-	double cos;
-
-	for (auto light:lights)
-	{
-		if (light.amLight)
-		{
-			light.ambientLight *= ambientReflection;
-			color[0] += light.ambientLight.red;
-			color[1] += light.ambientLight.green;
-			color[2] += light.ambientLight.blue;
-		}
-	}
-
+	// rest
     double k = w.x * A.x + w.y * A.y + w.z * A.z;
 
     double dzdx = (w.x) / (-d*k);
@@ -421,18 +408,37 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
-			// belichting
+			// belichting en shaduw
 			std::vector<double> colorTemp = color;
 
 			for (auto light:lights)
 			{
+				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+
+                if (enableShadows)
+                {
+                    Vector3D E = point * Matrix::inv(eyePointTrans);
+                    Vector3D L =  L * light.eye;
+                    Vector3D lAccent= Vector3D::point(L.x*light.d/(-L.z), L.y*light.d/(-L.z), 0);
+
+                    if (1/L.z > light.shadowMask.getZVal(lAccent.x, lAccent.y))
+                    {
+                        continue;
+                    }
+                }
+
+				if (light.amLight)
+				{
+					light.ambientLight *= ambientReflection;
+					color[0] += light.ambientLight.red;
+					color[1] += light.ambientLight.green;
+					color[2] += light.ambientLight.blue;
+				}
+
 				if (light.difLight)
 				{
 					double cosAlpha = -1;
 					double cosBeita = -1;
-
-					Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
-
 					Vector3D l;
 
 					if (light.infinity)
@@ -481,6 +487,74 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
             color = colorTemp;
 		}
 	}
+
+}
+
+void img::EasyImage::draw_zbuf_triangle_colorless(ZBuffer& zBuf,
+                                        Vector3D const& A,
+                                        Vector3D const& B,
+                                        Vector3D const& C,
+
+                                        double d,
+
+                                        double dx,
+                                        double dy,
+
+                                        Vector3D &eye) {
+
+
+    double posInf = std::numeric_limits<double>::infinity();
+    double negInf = -std::numeric_limits<double>::infinity();
+
+    Point2D a((d * A.x/-A.z) + dx, (d * A.y/-A.z) + dy);
+    Point2D b((d * B.x/-B.z) + dx, (d * B.y/-B.z) + dy);
+    Point2D c((d * C.x/-C.z) + dx, (d * C.y/-C.z) + dy);
+
+    int ymin = roundToInt(std::min(std::min(a.y, b.y), c.y)+0.5);
+    int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y)-0.5);
+
+    //calculating of dzdx and dzdy
+    Vector3D u = Vector3D::vector(B.x - A.x, B.y - A.y, B.z - A.z);
+    Vector3D v = Vector3D::vector(C.x - A.x, C.y - A.y, C.z - A.z);
+
+    Vector3D w = Vector3D::vector(u.cross_equals(v));
+
+    double k = w.x * A.x + w.y * A.y + w.z * A.z;
+
+    double dzdx = (w.x) / (-d*k);
+    double dzdy = (w.y) / (-d*k);
+
+    int xl; int xr;
+
+    for (int y=ymin; y<=ymax; y++) {
+
+        double xlab = posInf;
+        double xlbc = posInf;
+        double xlac = posInf;
+
+        double xrab = negInf;
+        double xrbc = negInf;
+        double xrac = negInf;
+
+        calculateXlXr(a,b,xlab, xrab,y);
+        calculateXlXr(a,c,xlac, xrac,y);
+        calculateXlXr(c,b,xlbc, xrbc,y);
+
+        xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
+        xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
+
+        for (int x = xl;x<=xr;x++) {
+            Point2D G;
+            G.x = (a.x + b.x + c.x)/3;
+            G.y = (a.y + b.y + c.y)/3;
+
+            double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
+
+            double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+
+            zBuf.setVal(x,y,zVal);
+        }
+    }
 
 }
 std::ostream& img::operator<<(std::ostream& out, EasyImage const& image)

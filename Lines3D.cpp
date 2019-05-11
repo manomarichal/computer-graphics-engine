@@ -75,13 +75,13 @@ void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double
 Matrix Figure3D::eyePointTrans(const Vector3D &eyepoint) {
 
     double theta, phi, r;
-    toPolar(eyepoint, theta, phi, r);
+    Figure3D::toPolar(eyepoint, theta, phi, r);
     Vector3D v = Vector3D::vector(0, 0, -r);
     Matrix m;
 
-    rotateAroundZ(m, (-M_PI / 2) - theta);
-    rotateAroundX(m, -phi);
-    translateMatrix(m, v);
+    Figure3D::rotateAroundZ(m, (-M_PI / 2) - theta);
+    Figure3D::rotateAroundX(m, -phi);
+    Figure3D::translateMatrix(m, v);
 
     /*
    m(1,1) = -std::sin(theta);
@@ -749,9 +749,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     center = Vector3D::point(conf[name]["center"].as_double_tuple_or_die()[0],
                              conf[name]["center"].as_double_tuple_or_die()[1],
                              conf[name]["center"].as_double_tuple_or_die()[2]);
-    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
-                          conf["General"]["eye"].as_double_tuple_or_die()[1],
-                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
     // read in faces
     std::cout << conf[name]["type"].as_string_or_die() << ", ";
@@ -791,17 +788,15 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     // generate transformation matrix
     Matrix m;
 
-    scaleMatrix(m, scale);
+    Figure3D::scaleMatrix(m, scale);
 
     //std::cout << "\n" << m << std::endl;
 
-    rotateAroundX(m, convertToRad(rotateX));
-    rotateAroundY(m, convertToRad(rotateY));
-    rotateAroundZ(m, convertToRad(rotateZ));
+    Figure3D::rotateAroundX(m, convertToRad(rotateX));
+    Figure3D::rotateAroundY(m, convertToRad(rotateY));
+    Figure3D::rotateAroundZ(m, convertToRad(rotateZ));
 
-    translateMatrix(m, center);
-
-    m *= eyePointTrans(eye);
+    Figure3D::translateMatrix(m, center);
 
     applyTransformations(m);
 }

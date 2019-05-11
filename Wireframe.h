@@ -31,7 +31,8 @@ class Wireframe {
     std::vector<std::vector<Figure3D>> allFigures;
     std::vector<Figure3D> figures;
     std::vector<Light> wireframeLights;
-
+    Vector3D eye;
+    bool applyShadows;
     // draw figure functions
     const img::EasyImage drawLines2D(bool zBuffered);
 
@@ -48,6 +49,10 @@ class Wireframe {
 
     // light functions
     void initLights(const ini::Configuration &conf);
+
+    //shadow
+    void initShadows(const ini::Configuration &conf);
+    void createLightZBuffer(std::vector<Figure3D> &figs,Light &light);
 
 
 public:
