@@ -754,7 +754,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
                           conf["General"]["eye"].as_double_tuple_or_die()[2]);
 
     // read in faces
-    std::cout << " consisting of: " << conf[name]["type"].as_string_or_die() << ", ";
+    std::cout << conf[name]["type"].as_string_or_die() << ", ";
 
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 
@@ -793,8 +793,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     scaleMatrix(m, scale);
 
-    m *= eyePointTrans(eye);
-
     //std::cout << "\n" << m << std::endl;
 
     rotateAroundX(m, convertToRad(rotateX));
@@ -803,6 +801,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     translateMatrix(m, center);
 
+    m *= eyePointTrans(eye);
 
     applyTransformations(m);
 }

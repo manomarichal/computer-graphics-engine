@@ -341,6 +341,7 @@ void Wireframe::initLights(const ini::Configuration &conf)
                                                                         conf["General"]["eye"].as_double_tuple_or_die()[2]));
             if (conf[name]["specularLight"].as_double_tuple_if_exists(defaultTuple))
             {
+                tempLight.specularLight.ini(conf[name]["specularLight"].as_double_tuple_or_die());
                 tempLight.specLight = true;
             }
         }
@@ -397,12 +398,18 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
         for (auto &figure:allFigures[n])
         {
             // colors
-            if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted") // FRACTAL
+            if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
             {
                 figure.lights = wireframeLights;
                 figure.readLights(name, conf);
             }
-            else figure.color.ini(conf[name]["color"].as_double_tuple_or_die());
+            else {
+                Light tempLight;
+                tempLight.ambientLight.ini(conf[name]["color"].as_double_tuple_or_die());
+                tempLight.amLight = true;
+                figure.lights = {tempLight};
+                figure.ambientReflection.ini({1, 1, 1});
+            }
 
             for (Vector3D &point:figure.points)
             {

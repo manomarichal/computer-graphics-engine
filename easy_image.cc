@@ -437,9 +437,9 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 					if (light.infinity)
 					{
-						l = light.ldVector * -1;
+						l = -light.ldVector;
 						l.normalise();
-						cosAlpha = Vector3D::dot(l ,n);
+						cosAlpha = Vector3D::dot(l ,n)*-1;
 					}
 					else {
                         l = Vector3D::vector(light.ldVector - point);
@@ -450,24 +450,24 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 					if (light.specLight)
 					{
-						Vector3D r = 2*cosAlpha*n - l;
+						Vector3D r = (2*cosAlpha*-1)*n - l;
 						cosBeita = Vector3D::dot(r, Vector3D::normalise(Vector3D::point(0 , 0, 0) - point));
 					}
 
 
-					if (cosAlpha > 0)
+                    if (cosBeita > 0)
+                    {
+                        double j = std::pow(cosBeita, reflectionCoeff)* cosBeita;
+                        color[0] += light.specularLight.red * specularReflection[0]* j;
+                        color[1] += light.specularLight.green * specularReflection[1] * j;
+                        color[2] += light.specularLight.blue * specularReflection[2] * j;
+                    }
+
+                    if (cosAlpha > 0)
 					{
 						color[0] += light.diffuseLight.red * diffuseReflection[0] * cosAlpha;
 						color[1] += light.diffuseLight.green * diffuseReflection[1] * cosAlpha;
 						color[2] += light.diffuseLight.blue * diffuseReflection[2] * cosAlpha;
-					}
-					//std::cout << cosBeita << std::endl;
-					if (cosBeita > 0)
-					{
-						cosBeita = std::pow(cosBeita, reflectionCoeff);
-						color[0] += light.specularLight.red * specularReflection[0] * cosBeita;
-						color[1] += light.specularLight.green * specularReflection[1] * cosBeita;
-						color[2] += light.specularLight.blue * specularReflection[2] * cosBeita;
 					}
 
 				}
