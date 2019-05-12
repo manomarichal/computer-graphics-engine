@@ -54,6 +54,9 @@ class Wireframe {
     void initShadows(const ini::Configuration &conf);
     void createLightZBuffer(std::vector<Figure3D> &figs,Light &light);
 
+    // bollen & cilinders
+    std::vector<Figure3D> generateThiccFigure(std::string name, const ini::Configuration &conf, Figure3D &root);
+
 
 public:
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light);

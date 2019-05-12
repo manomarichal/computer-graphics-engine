@@ -142,11 +142,11 @@ public:
 
     void createDodecahedron(std::string name, const ini::Configuration &conf);
 
-    void createSphere(std::string name, const ini::Configuration &conf);
+    void createSphere(std::string name, const ini::Configuration &conf, int n);
 
     void createCone(std::string name, const ini::Configuration &conf);
 
-    void createCylinder(std::string name, const ini::Configuration &conf);
+    void createCylinder(std::string name, const ini::Configuration &conf, double h, int n);
 
     void createTorus(std::string name, const ini::Configuration &conf);
 

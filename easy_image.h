@@ -357,9 +357,7 @@ namespace img
                                     double d,
 
                                     double dx,
-                                    double dy,
-
-                                    Vector3D &eye);
+                                    double dy);
 
 
 

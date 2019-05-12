@@ -77,7 +77,6 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
     double ymax = INT64_MIN;
 
     for (auto &figure:figs) {
-
         for (auto &point:figure.points2D) {
 
             if (point.x < xmin) xmin = point.x;
@@ -107,8 +106,7 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
                                                          figure.points[face.pointIndexes[0]],
                                                          figure.points[face.pointIndexes[1]],
                                                          figure.points[face.pointIndexes[2]],
-                                                         light.d, light.dx, light.dy,
-                                                         figure.eye);
+                                                         light.d, light.dx, light.dy);
         }
     }
 }
@@ -173,6 +171,202 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     }
     return image;
 }
+void Wireframe::initLights(const ini::Configuration &conf)
+{
+    std::vector<Light> light;
+    std::vector<double> defaultTuple = {-1, -1, -1};
+
+    for (int k=0;k<conf["General"]["nrLights"].as_int_or_die();k++)
+    {
+        Color temp;
+        Light tempLight;
+        std::string name = "Light" + std::to_string(k);
+
+        // ambient light
+        if (conf[name]["ambientLight"].as_double_tuple_if_exists(defaultTuple))
+        {
+            temp.ini(conf[name]["ambientLight"].as_double_tuple_or_die());
+            tempLight.ambientLight.iniColor(temp);
+            tempLight.amLight = true;
+        }
+
+        // diffuse light
+        if (conf[name]["diffuseLight"].as_double_tuple_if_exists(defaultTuple))
+        {
+            temp.ini(conf[name]["diffuseLight"].as_double_tuple_or_default(defaultTuple));
+            tempLight.diffuseLight.iniColor(temp);
+            tempLight.infinity = conf[name]["infinity"].as_bool_or_default(false);
+            tempLight.difLight = true;
+
+            if (tempLight.infinity)
+            {
+                tempLight.ldVector = Vector3D::vector(conf[name]["direction"].as_double_tuple_or_die()[0],
+                                                      conf[name]["direction"].as_double_tuple_or_die()[1],
+                                                      conf[name]["direction"].as_double_tuple_or_die()[2]);
+            }
+            else tempLight.ldVector = Vector3D::point(conf[name]["location"].as_double_tuple_or_die()[0],
+                                                       conf[name]["location"].as_double_tuple_or_die()[1],
+                                                       conf[name]["location"].as_double_tuple_or_die()[2]);
+
+
+            tempLight.ldVector *= Figure3D::eyePointTrans(eye);
+
+            if (conf[name]["specularLight"].as_double_tuple_if_exists(defaultTuple))
+            {
+                tempLight.specularLight.ini(conf[name]["specularLight"].as_double_tuple_or_die());
+                tempLight.specLight = true;
+            }
+        }
+
+
+        light.emplace_back(tempLight);
+
+    }
+    wireframeLights = light;
+}
+img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)
+{
+    // read information from configuration file
+    imageSize = conf["General"]["size"].as_int_or_die();
+    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
+    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
+    std::string type = conf["General"]["type"].as_string_or_die();
+    applyShadows = conf["General"]["shadowEnabled"].as_bool_or_default(false);
+
+    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                          conf["General"]["eye"].as_double_tuple_or_die()[1],
+                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
+
+    // belichting
+    if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
+    {
+        initLights(conf);
+    }
+
+    for (int k = 0; k < nrOfFigures; k++)
+    {
+        std::string name = "Figure" + std::to_string(k);
+
+        Figure3D temp(name, conf, zBuffTriangle, light);
+
+        if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
+        {
+            if (conf[name]["type"].as_string_or_die() == "FractalBuckyBall") return drawLines2D(zBuffered);
+
+            isFractal(name, conf, temp);
+        }
+        else if (conf[name]["type"].as_string_or_die() == "MengerSponge")
+        {
+            createMengerSponge(name, conf, temp);
+        }
+        else
+        {
+            std::vector<Figure3D> f;
+            f.emplace_back(temp);
+            allFigures.emplace_back(f);
+        }
+    }
+
+    // do thick stuff
+    for (unsigned int n = 0; n < allFigures.size(); n++)
+    {
+        std::string name = "Figure" + std::to_string(n);
+
+        if (conf[name]["type"].as_string_or_die().substr(0, 5) != "Thick") continue;
+
+        std::vector<Figure3D> temp;
+
+        for (auto &figure:allFigures[n])
+        {
+            for (auto &thiccFigure:generateThiccFigure(name, conf, figure))
+            {
+                temp.emplace_back(thiccFigure);
+            }
+        }
+        allFigures[n] = temp;
+    }
+
+    // CREATING SHADOWMASKS
+    if (applyShadows)
+    {
+        for (auto &light:wireframeLights)
+        {
+            if (light.infinity) continue;
+
+            std::vector<Figure3D> figs;
+
+            light.eye = Figure3D::eyePointTrans(light.ldVector*Matrix::inv(Figure3D::eyePointTrans(eye)));
+
+            for (unsigned int n = 0; n < allFigures.size(); n++)
+            {
+                for (auto figure:allFigures[n])
+                {
+                    figure.applyTransformations(light.eye);
+
+                    for (Vector3D &point:figure.points)
+                    {
+                        figure.doProjection(point, 1);
+                    }
+
+                    figs.emplace_back(figure);
+                }
+            }
+            createLightZBuffer(figs, light);
+        }
+    }
+
+    // FIGURES
+    Matrix m = Figure3D::eyePointTrans(eye);
+
+    for (unsigned int n = 0; n < allFigures.size(); n++)
+    {
+        std::string name = "Figure" + std::to_string(n);
+
+        for (auto &figure:allFigures[n])
+        {
+            figure.applyTransformations(m);
+
+            // colors
+            if ((conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted"))
+            {
+                figure.readLights(name, conf);
+            }
+
+            else {
+                Light tempLight;
+                tempLight.ambientLight.ini(conf[name]["color"].as_double_tuple_or_die());
+                figure.color = tempLight.ambientLight;
+                tempLight.amLight = true;
+                wireframeLights = {tempLight};
+                figure.ambientReflection.ini({1, 1, 1});
+            }
+
+
+            for (Vector3D &point:figure.points)
+            {
+                figure.doProjection(point, 1);
+            }
+
+            if (!zBuffTriangle)
+            {
+                figure.createLinesOutOfFaces();
+
+                figure.addLines2D(lines);
+            }
+            else figure.createTriangles();
+
+            figures.emplace_back(figure);
+        }
+    }
+
+    std::cout << "\n";
+
+    if(zBuffTriangle) return drawZBufferedTriangles();
+
+    return drawLines2D(zBuffered);
+}
+
+// -------------------------------------FRACTALS-----------------------------
 void Wireframe::isFractal(std::string name, const ini::Configuration &conf, Figure3D &figure)
 {
     int nrIterations = conf[name]["nrIterations"].as_int_or_die();
@@ -335,175 +529,63 @@ void Wireframe::createMengerSponge(std::string name, const ini::Configuration &c
 
     allFigures.emplace_back(temp);
 }
-void Wireframe::initLights(const ini::Configuration &conf)
+std::vector<Figure3D> Wireframe::generateThiccFigure(std::string name, const ini::Configuration &conf, Figure3D &root)
 {
-    std::vector<Light> light;
-    std::vector<double> defaultTuple = {-1, -1, -1};
+    std::vector<Figure3D> thiccFigures;
 
-    for (int k=0;k<conf["General"]["nrLights"].as_int_or_die();k++)
+    double r = conf[name]["radius"].as_double_or_die();
+
+    int nC = conf[name]["n"].as_int_or_die();
+
+    int m = conf[name]["m"].as_int_or_die();
+
+
+    for (int i = 0; i < root.points.size(); ++i)
     {
-        Color temp;
-        Light tempLight;
-        std::string name = "Light" + std::to_string(k);
+        Figure3D sphere;
+        sphere.createSphere(name, conf, m);
 
-        // ambient light
-        if (conf[name]["ambientLight"].as_double_tuple_if_exists(defaultTuple))
-        {
-            temp.ini(conf[name]["ambientLight"].as_double_tuple_or_die());
-            tempLight.ambientLight.iniColor(temp);
-            tempLight.amLight = true;
-        }
+        Matrix m;
+        Figure3D::scaleMatrix(m, r);
+        Figure3D::translateMatrix(m, Vector3D::vector(root.points[i]));
+        sphere.applyTransformations(m);
 
-        // diffuse light
-        if (conf[name]["diffuseLight"].as_double_tuple_if_exists(defaultTuple))
-        {
-            temp.ini(conf[name]["diffuseLight"].as_double_tuple_or_default(defaultTuple));
-            tempLight.diffuseLight.iniColor(temp);
-            tempLight.infinity = conf[name]["infinity"].as_bool_or_default(false);
-            tempLight.difLight = true;
-
-            if (tempLight.infinity)
-            {
-                tempLight.ldVector = Vector3D::vector(conf[name]["direction"].as_double_tuple_or_die()[0],
-                                                      conf[name]["direction"].as_double_tuple_or_die()[1],
-                                                      conf[name]["direction"].as_double_tuple_or_die()[2]);
-            }
-            else tempLight.ldVector = Vector3D::point(conf[name]["location"].as_double_tuple_or_die()[0],
-                                                       conf[name]["location"].as_double_tuple_or_die()[1],
-                                                       conf[name]["location"].as_double_tuple_or_die()[2]);
-
-
-            tempLight.ldVector *= Figure3D::eyePointTrans(eye);
-
-            if (conf[name]["specularLight"].as_double_tuple_if_exists(defaultTuple))
-            {
-                tempLight.specularLight.ini(conf[name]["specularLight"].as_double_tuple_or_die());
-                tempLight.specLight = true;
-            }
-        }
-
-
-        light.emplace_back(tempLight);
-
-    }
-    wireframeLights = light;
-}
-img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)
-{
-    // read information from configuration file
-    imageSize = conf["General"]["size"].as_int_or_die();
-    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
-    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
-    std::string type = conf["General"]["type"].as_string_or_die();
-    applyShadows = conf["General"]["shadowEnabled"].as_bool_or_default(false);
-
-    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
-                          conf["General"]["eye"].as_double_tuple_or_die()[1],
-                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
-
-    // belichting
-    if (conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted")
-    {
-        initLights(conf);
+        thiccFigures.emplace_back(sphere);
     }
 
-    for (int k = 0; k < nrOfFigures; k++)
-    {
-        std::string name = "Figure" + std::to_string(k);
+    for (const Face &face:root.faces) {
 
-        Figure3D temp(name, conf, zBuffTriangle, light);
+        for (uint index = 0; index < face.pointIndexes.size(); index++) {
 
-        if (conf[name]["type"].as_string_or_die().substr(0, 7) == "Fractal") // FRACTAL
-        {
-            if (conf[name]["type"].as_string_or_die() == "FractalBuckyBall") return drawLines2D(zBuffered);
+            int n = face.pointIndexes[(index + 1) % (face.pointIndexes.size())];
 
-            isFractal(name, conf, temp);
-        }
-        else if (conf[name]["type"].as_string_or_die() == "MengerSponge")
-        {
-            createMengerSponge(name, conf, temp);
-        }
-        else
-        {
-            std::vector<Figure3D> f;
-            f.emplace_back(temp);
-            allFigures.emplace_back(f);
+            Vector3D point1 = root.points[face.pointIndexes[index]];
+            Vector3D point2 = root.points[n];
+            
+            double height = sqrt
+                    (std::pow(point2.x - point1.x, 2)+
+                     std::pow(point2.y - point1.y, 2)+
+                     std::pow(point2.z - point1.z, 2));
+
+            Figure3D cylinder;
+            cylinder.createCylinder(name, conf, height*1/r, nC);
+
+            Vector3D p1p2 = Vector3D::vector(point2 - point1);
+            p1p2.normalise();
+
+            double theta; double phi; double rP;
+            cylinder.toPolar(p1p2, theta, phi, rP);
+
+            Matrix m;
+            Figure3D::scaleMatrix(m, r);
+            Figure3D::rotateAroundY(m, phi);
+            Figure3D::rotateAroundZ(m, theta);
+            Figure3D::translateMatrix(m, Vector3D::vector(point1));
+
+            cylinder.applyTransformations(m);
+            thiccFigures.emplace_back(cylinder);
         }
     }
 
-    // CREATING SHADOWMASKS
-    if (applyShadows)
-    {
-        for (auto &light:wireframeLights)
-        {
-            std::vector<Figure3D> figs;
-
-            light.eye = Figure3D::eyePointTrans(light.ldVector);
-
-            for (unsigned int n = 0; n < allFigures.size(); n++)
-            {
-                std::string name = "Figure" + std::to_string(n);
-
-                for (auto figure:allFigures[n])
-                {
-                    figure.applyTransformations(light.eye);
-
-                    for (Vector3D &point:figure.points)
-                    {
-                        figure.doProjection(point, 1);
-                    }
-
-                    figs.emplace_back(figure);
-                }
-            }
-            createLightZBuffer(figs, light);
-        }
-    }
-
-    // FIGURES
-    Matrix m = Figure3D::eyePointTrans(eye);
-
-    for (unsigned int n = 0; n < allFigures.size(); n++)
-    {
-        std::string name = "Figure" + std::to_string(n);
-
-        for (auto &figure:allFigures[n])
-        {
-            figure.applyTransformations(m);
-
-            // colors
-            if ((conf["General"]["type"].as_string_or_die().substr(0, 7) == "Lighted"))
-            {
-                figure.readLights(name, conf);
-            }
-
-            else {
-                Light tempLight;
-                tempLight.ambientLight.ini(conf[name]["color"].as_double_tuple_or_die());
-                tempLight.amLight = true;
-                wireframeLights = {tempLight};
-                figure.ambientReflection.ini({1, 1, 1});
-            }
-
-
-            for (Vector3D &point:figure.points)
-            {
-                figure.doProjection(point, 1);
-            }
-
-            if (!zBuffTriangle)
-            {
-                figure.createLinesOutOfFaces();
-
-                figure.addLines2D(lines);
-            }
-            else figure.createTriangles();
-
-            figures.emplace_back(figure);
-        }
-    }
-
-    if(zBuffTriangle) return drawZBufferedTriangles();
-
-    return drawLines2D(zBuffered);
+    return thiccFigures;
 }

@@ -421,15 +421,13 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
 
-                if (enableShadows)
-                {
-                    Vector3D E = point * eyePointTrans;
-                    Vector3D L =  L * light.eye;
-                    Point2D lAccent;
-                    lAccent.x = L.x*light.d/(-L.z);
-                    lAccent.y = L.y*light.d/(-L.z);
-
-                }
+//                if (enableShadows)
+//                {
+//                    Vector3D E = point * eyePointTrans;
+//                    Vector3D L =  E * light.eye;
+//
+//                    Vector3D lA = Vector3D::point(light.d * L.x/-L.z, light.d * L.y/-L.z, 1/zVal);
+//                }
 
 				if (light.difLight)
 				{
@@ -494,9 +492,7 @@ void img::EasyImage::draw_zbuf_triangle_colorless(ZBuffer& zBuf,
                                         double d,
 
                                         double dx,
-                                        double dy,
-
-                                        Vector3D &eye) {
+                                        double dy) {
 
 
     double posInf = std::numeric_limits<double>::infinity();

@@ -485,9 +485,8 @@ void Figure3D::createDodecahedron(std::string name, const ini::Configuration &co
     createDodecahedronFace(16, 7, 6, 15, 20);
 }
 
-void Figure3D::createSphere(std::string name, const ini::Configuration &conf)
+void Figure3D::createSphere(std::string name, const ini::Configuration &conf, int n)
 {
-    int n = conf[name]["n"].as_int_or_die();
     createIsocahedron(name, conf);
 
     for (int m = 0; m < n; m++) {
@@ -550,12 +549,8 @@ void Figure3D::createCone(std::string name, const ini::Configuration &conf)
     faces.emplace_back(temp);
 }
 
-void Figure3D::createCylinder(std::string name, const ini::Configuration &conf)
+void Figure3D::createCylinder(std::string name, const ini::Configuration &conf, double h, int n)
 {
-
-    double h = conf[name]["height"].as_double_or_die();
-    int n = conf[name]["n"].as_int_or_die();
-
     for (int i = 0; i < n; i++) {
         points.emplace_back(Vector3D::point(std::cos((2 * i * M_PI) / n),
                                             std::sin((2 * i * M_PI) / n), 0));
@@ -754,33 +749,41 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     std::cout << conf[name]["type"].as_string_or_die() << ", " << std::flush;
 
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickLineDrawing") createLineDrawing(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Cube") createCube(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "FractalCube") createCube(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickCube") createCube(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Octahedron") createOctahedron(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "FractalOctahedron") createOctahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickOctahedron") createOctahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Tetrahedron") createTetrahedron(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "FractalTetrahedron") createTetrahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickTetrahedron") createTetrahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Icosahedron") createIsocahedron(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "FractalIcosahedron") createIsocahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickIcosahedron") createIsocahedron(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Dodecahedron") createDodecahedron(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "FractalDodecahedron") createDodecahedron(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickDodecahedron") createDodecahedron(name, conf);
 
-    else if (conf[name]["type"].as_string_or_die() == "Sphere") createSphere(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "Sphere") createSphere(name, conf, conf[name]["n"].as_int_or_die());
 
     else if (conf[name]["type"].as_string_or_die() == "Cone") createCone(name, conf);
 
-    else if (conf[name]["type"].as_string_or_die() == "Cylinder") createCylinder(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "Cylinder") createCylinder(name, conf, conf[name]["height"].as_double_or_die(), conf[name]["n"].as_int_or_die());
 
     else if (conf[name]["type"].as_string_or_die() == "Torus") createTorus(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "Thick3DLSystem") create3DLSystem(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "MengerSponge") createCube(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickMengerSponge") createCube(name, conf);
 
     else std::cerr << "unknown figure type" << std::endl;
 
