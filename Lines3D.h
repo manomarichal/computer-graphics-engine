@@ -148,6 +148,8 @@ public:
 
     void createCylinder(std::string name, const ini::Configuration &conf, double h, int n);
 
+    void createMoebius(std::string name, const ini::Configuration &conf);
+
     void createTorus(std::string name, const ini::Configuration &conf);
 
     void create3DLSystem(std::string name, const ini::Configuration &conf);

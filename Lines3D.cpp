@@ -601,6 +601,34 @@ void Figure3D::createTorus(std::string name, const ini::Configuration &conf)
     }
 }
 
+void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
+{
+
+    double r = conf[name]["r"].as_double_or_die();
+    int n = conf[name]["n"].as_int_or_die();
+    int m = conf[name]["m"].as_int_or_die();
+
+    for (int i=0;i<n;i++) {
+        for (int j = 0; j < m; j++) {
+
+            double u = (2*i*M_PI) / n;
+
+            double v =  ((double)2*(double)j/(double)m) - 1;
+
+            points.emplace_back(Vector3D::point((r + (v/2)*std::cos(u/2)) * std::cos(u),
+                                                (r + (v/2)*std::cos(u/2)) * std::sin(u),
+                                                (v/2)*std::sin(u/2)));
+        }
+    }
+
+    for (int i=0;i<n;i++) {
+        for (int j = 0; j < m; j++) {
+            faces.emplace_back(Face(i*m + j, ((i+1)%n)*m + j, ((i+1)%n)*m  + (j + 1)%m, i*m + (j+1)%m));
+        }
+    }
+}
+
+
 void Figure3D::createLinesOutOfFaces()
 {
     for (const Face &face:faces) {
@@ -778,6 +806,10 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     else if (conf[name]["type"].as_string_or_die() == "Cylinder") createCylinder(name, conf, conf[name]["height"].as_double_or_die(), conf[name]["n"].as_int_or_die());
 
     else if (conf[name]["type"].as_string_or_die() == "Torus") createTorus(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "Moebius") createMoebius(name, conf);
+    else if (conf[name]["type"].as_string_or_die() == "ThickMoebius") createMoebius(name, conf);
+
 
     else if (conf[name]["type"].as_string_or_die() == "3DLSystem") create3DLSystem(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "Thick3DLSystem") create3DLSystem(name, conf);
