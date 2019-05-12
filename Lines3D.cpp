@@ -751,7 +751,7 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
                              conf[name]["center"].as_double_tuple_or_die()[2]);
 
     // read in faces
-    std::cout << conf[name]["type"].as_string_or_die() << ", ";
+    std::cout << conf[name]["type"].as_string_or_die() << ", " << std::flush;
 
     if (conf[name]["type"].as_string_or_die() == "LineDrawing") createLineDrawing(name, conf);
 

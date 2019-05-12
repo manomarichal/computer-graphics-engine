@@ -325,10 +325,10 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 
 void img::EasyImage::calculateXlXr(Point2D &P, Point2D &Q, double &xl, double &xr, double y) {
 
-	if ( (y - P.y)*(y - Q.y) <= 0 and P.y != Q.y) {
+	if ( (y - P.y)*(y - Q.y) <= 0 and P.y != Q.y)
+	{
 		xl = Q.x + ( (P.x - Q.x) * ( (y - Q.y)/(P.y - Q.y) ) );
 		xr = xl;
-
 	}
 }
 
@@ -412,28 +412,24 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 			for (const Light &light:lights)
 			{
-				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
-
-                if (enableShadows)
-                {
-                    Vector3D E = point * Matrix::inv(eyePointTrans);
-                    Vector3D L =  L * light.eye;
-                    Point2D lAccent;
-                    lAccent.x = L.x*light.d/(-L.z);
-                    lAccent.y = L.y*light.d/(-L.z);
-
-                    if (1/L.z > light.shadowMask.getZVal(lAccent.x, lAccent.y))
-                    {
-                        continue;
-                    }
-                }
-
 				if (light.amLight)
 				{
 					color[0] += light.ambientLight.red*ambientReflection[0];
 					color[1] += light.ambientLight.green*ambientReflection[1];
 					color[2] += light.ambientLight.blue*ambientReflection[2];
 				}
+
+				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+
+                if (enableShadows)
+                {
+                    Vector3D E = point * eyePointTrans;
+                    Vector3D L =  L * light.eye;
+                    Point2D lAccent;
+                    lAccent.x = L.x*light.d/(-L.z);
+                    lAccent.y = L.y*light.d/(-L.z);
+
+                }
 
 				if (light.difLight)
 				{
@@ -543,7 +539,8 @@ void img::EasyImage::draw_zbuf_triangle_colorless(ZBuffer& zBuf,
         xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
         xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
 
-        for (int x = xl;x<=xr;x++) {
+        for (int x = xl;x<=xr;x++)
+        {
             Point2D G;
             G.x = (a.x + b.x + c.x)/3;
             G.y = (a.y + b.y + c.y)/3;

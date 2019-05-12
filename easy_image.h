@@ -109,6 +109,8 @@ public:
 	Matrix eye;
 
 	double d;
+	double dx;
+	double dy;
 };
 
 

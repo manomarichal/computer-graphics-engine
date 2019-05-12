@@ -35,11 +35,6 @@ const img::EasyImage Wireframe::drawLines2D(bool zBuffered)
         if (line.p1.y < ymin) ymin = line.p1.y;
         if (line.p2.y < ymin) ymin = line.p2.y;
     }
-    // calculating the imageSize of the image
-
-    std::cout << "\n" << xmin << " " << xmax;
-    std::cout << ymin << " " << ymax;
-
     double rangex = xmax - xmin;
     double rangey = ymax - ymin;
     double imagex = imageSize * (rangex / std::max(rangex, rangey));
@@ -81,9 +76,7 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
     double ymin = INT64_MAX;
     double ymax = INT64_MIN;
 
-    for (auto &figure:figures) {
-
-        figure.createTriangles();
+    for (auto &figure:figs) {
 
         for (auto &point:figure.points2D) {
 
@@ -95,23 +88,16 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
         }
     }
 
-    double imagex;
-    double imagey;
-    double rangex;
-    double rangey;
-
-    rangex = xmax - xmin;
-    rangey = ymax - ymin;
-    imagex = imageSize * (rangex / std::max(rangex, rangey));
-    imagey = imageSize * (rangey / std::max(rangex, rangey));
+    double rangex = xmax - xmin;
+    double rangey = ymax - ymin;
+    double imagex = imageSize * (rangex / std::max(rangex, rangey));
+    double imagey = imageSize * (rangey / std::max(rangex, rangey));
 
     light.d = 0.95 * (imagex / rangex);
 
-
     // move line drawing
-    double dx, dy;
-    dx = (imagex / 2) - (light.d * ((xmin + xmax) / 2));
-    dy = (imagey / 2) - (light.d * ((ymin + ymax) / 2));
+    light.dx = (imagex / 2) - (light.d * ((xmin + xmax) / 2));
+    light.dy = (imagey / 2) - (light.d * ((ymin + ymax) / 2));
 
     light.shadowMask = ZBuffer(imagex, imagey);
 
@@ -121,7 +107,7 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
                                                          figure.points[face.pointIndexes[0]],
                                                          figure.points[face.pointIndexes[1]],
                                                          figure.points[face.pointIndexes[2]],
-                                                         light.d, dx, dy,
+                                                         light.d, light.dx, light.dy,
                                                          figure.eye);
         }
     }
@@ -135,8 +121,6 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     double ymax = INT64_MIN;
 
     for (auto &figure:figures) {
-
-        figure.createTriangles();
 
         for (auto &point:figure.points2D) {
 
@@ -173,9 +157,6 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     {
         for (auto &face:figure.faces)
         {
-
-            std::cout << "face!" << std::endl;
-
             std::vector<double> ambient = figure.ambientReflection.asVector();
             std::vector<double> diffuse = figure.diffuseReflection.asVector();
             std::vector<double> specular = figure.specularReflection.asVector();
@@ -187,7 +168,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
                                                      figure.reflectionCoefficient, wireframeLights,
-                                                     Figure3D::eyePointTrans(eye), applyShadows);
+                                                     Matrix::inv(Figure3D::eyePointTrans(eye)), applyShadows);
         }
     }
     return image;
@@ -516,6 +497,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
 
                 figure.addLines2D(lines);
             }
+            else figure.createTriangles();
 
             figures.emplace_back(figure);
         }

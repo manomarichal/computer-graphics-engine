@@ -15,7 +15,7 @@
 img::EasyImage generate_image(const ini::Configuration &conf)
 {
     std::string type = conf["General"]["type"].as_string_or_die();
-    std::cout << "Drawing a " << type  << " consisting of: ";
+    std::cout << "\nDrawing a " << type  << " consisting of: " << std::flush;
 
     if (type == "2DLSystem") {
         Lines2D lines(conf);

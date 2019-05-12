@@ -16,10 +16,12 @@ ZBuffer::ZBuffer(const int width, const int height) {
 
 double ZBuffer::getZVal(int x, int y) const
 {
+    //std::cout << x << "   " << y << std::endl;
     return zVals.at(y*xW + x);
 }
 
 bool ZBuffer::setVal(int x, int y, double val) {
+    //std::cout << x << "   " << y << std::endl;
     if (val < zVals.at(y*xW + x)) {
         zVals.at(y*xW + x) = val;
         return true;
