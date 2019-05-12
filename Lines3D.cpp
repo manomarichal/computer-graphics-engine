@@ -608,8 +608,8 @@ void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
     int n = conf[name]["n"].as_int_or_die();
     int m = conf[name]["m"].as_int_or_die();
 
-    for (int i=0;i<n;i++) {
-        for (int j = 0; j < m; j++) {
+    for (int i=0;i<=n;i++) {
+        for (int j = 0; j <= m; j++) {
 
             double u = (2*i*M_PI) / n;
 
@@ -621,8 +621,8 @@ void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
         }
     }
 
-    for (int i=0;i<n;i++) {
-        for (int j = 0; j < m; j++) {
+    for (int i=0;i<=n;i++) {
+        for (int j = 0; j <= m; j++) {
             faces.emplace_back(Face(i*m + j, ((i+1)%n)*m + j, ((i+1)%n)*m  + (j + 1)%m, i*m + (j+1)%m));
         }
     }
