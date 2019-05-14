@@ -373,6 +373,12 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 	std::vector<double> color = {0, 0 ,0};
 	Vector3D n = Vector3D::normalise(w);
 
+    Point2D G;
+    G.x = (a.x + b.x + c.x)/3;
+    G.y = (a.y + b.y + c.y)/3;
+
+    double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
+
 	// rest
     double k = w.x * A.x + w.y * A.y + w.z * A.z;
 
@@ -399,12 +405,6 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 		for (int x = xl;x<=xr;x++) {
 
-            Point2D G;
-		    G.x = (a.x + b.x + c.x)/3;
-		    G.y = (a.y + b.y + c.y)/3;
-
-		    double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
-
 			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
 			// belichting en shaduw
@@ -419,15 +419,33 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 					color[2] += light.ambientLight.blue*ambientReflection[2];
 				}
 
-				Vector3D point = Vector3D::vector( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+				Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
 
-//                if (enableShadows)
-//                {
-//                    Vector3D E = point * eyePointTrans;
-//                    Vector3D L =  E * light.eye;
-//
-//                    Vector3D lA = Vector3D::point(light.d * L.x/-L.z, light.d * L.y/-L.z, 1/zVal);
-//                }
+                if (enableShadows)
+                {
+                    Vector3D L = point * eyePointTrans * light.eye;
+                    Vector3D lA = Vector3D::point((light.d * L.x/-L.z)+light.dx, (light.d * L.y/-L.z)+light.dy, 0);
+
+                    //std::cout << light.d << "  " << light.dx << "   " << light.dy  << std::endl;
+                    double ax = lA.x - std::floor(lA.x);
+                    double ay = lA.y - std::floor(lA.y);
+
+                    double az = light.shadowMask.getZVal(std::floor(lA.x), std::ceil(lA.y));
+                    double bz = light.shadowMask.getZVal(std::ceil(lA.x), std::ceil(lA.y));
+                    double cz = light.shadowMask.getZVal(std::floor(lA.x), std::floor(lA.y));
+                    double dz = light.shadowMask.getZVal(std::ceil(lA.x), std::floor(lA.y));
+
+                    double zeinvers = (1 - ax)*az + ax*bz;
+                    double zfinvers = (1 - ax)*cz + ax*dz;
+
+                    double zfinal = ay*zeinvers + (1-ay)*zfinvers;
+
+                    //std::cout << ax << "   "  << ay << "   "  << az << "  " << bz << "   "  << std::endl;
+                    //std::cout << L.z << "   "  << zeinvers << "   "  << zfinvers << "   " << zfinal << std::endl;
+                    //std::cout << std::abs(zfinal - L.z) << std::endl;
+
+                    if (std::abs(zfinal - (1/L.z)) > std::pow(10, -4)) continue;
+                }
 
 				if (light.difLight)
 				{
@@ -506,17 +524,21 @@ void img::EasyImage::draw_zbuf_triangle_colorless(ZBuffer& zBuf,
     int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y)-0.5);
 
     //calculating of dzdx and dzdy
-    Vector3D u = Vector3D::vector(B.x - A.x, B.y - A.y, B.z - A.z);
-    Vector3D v = Vector3D::vector(C.x - A.x, C.y - A.y, C.z - A.z);
-
+    Vector3D u = B - A;
+    Vector3D v = C - A;
     Vector3D w = Vector3D::vector(u.cross_equals(v));
 
     double k = w.x * A.x + w.y * A.y + w.z * A.z;
-
     double dzdx = (w.x) / (-d*k);
     double dzdy = (w.y) / (-d*k);
 
     int xl; int xr;
+
+    Point2D G;
+    G.x = (a.x + b.x + c.x)/3;
+    G.y = (a.y + b.y + c.y)/3;
+
+    double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
 
     for (int y=ymin; y<=ymax; y++) {
 
@@ -537,18 +559,11 @@ void img::EasyImage::draw_zbuf_triangle_colorless(ZBuffer& zBuf,
 
         for (int x = xl;x<=xr;x++)
         {
-            Point2D G;
-            G.x = (a.x + b.x + c.x)/3;
-            G.y = (a.y + b.y + c.y)/3;
-
-            double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
-
-            double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+            double zVal = zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
             zBuf.setVal(x,y,zVal);
         }
     }
-
 }
 std::ostream& img::operator<<(std::ostream& out, EasyImage const& image)
 {

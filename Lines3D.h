@@ -94,6 +94,7 @@ public:
     Color specularReflection;
     double reflectionCoefficient;
     void readLights(std::string name, const ini::Configuration &conf);
+    std::vector<Light> lights;
 
     std::vector<Face> faces;
 
@@ -153,6 +154,8 @@ public:
     void createTorus(std::string name, const ini::Configuration &conf);
 
     void create3DLSystem(std::string name, const ini::Configuration &conf);
+
+    void createEuclidianKwadraticFace(std::string name, const ini::Configuration &conf);
 };
 
 

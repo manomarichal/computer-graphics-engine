@@ -1,3 +1,2 @@
-specular_light257
 spheres_and_cilinders017
 spheres_and_cilinders051

@@ -12,9 +12,9 @@
 class ZBuffer
 {
         std::vector<double> zVals;
+    public:
         int xW;
         int yH;
-    public:
         ZBuffer(const int width, const int height);
 
         ZBuffer()=default;

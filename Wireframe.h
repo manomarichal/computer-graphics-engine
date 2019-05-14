@@ -27,6 +27,7 @@
 class Wireframe {
     Color backgroundcolor;
     int imageSize, nrOfFigures;
+    int shadowSize;
     listWithLines lines;
     std::vector<std::vector<Figure3D>> allFigures;
     std::vector<Figure3D> figures;
@@ -59,6 +60,7 @@ class Wireframe {
 
 
 public:
+    void createImageZBuffer(const ZBuffer &zbuffer);
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light);
 
 };

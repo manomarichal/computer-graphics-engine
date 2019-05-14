@@ -21,8 +21,9 @@ double ZBuffer::getZVal(int x, int y) const
 }
 
 bool ZBuffer::setVal(int x, int y, double val) {
-    //std::cout << x << "   " << y << std::endl;
-    if (val < zVals.at(y*xW + x)) {
+    if (val < zVals.at(y*xW + x))
+    {
+        //std::cout  << val << std::endl;
         zVals.at(y*xW + x) = val;
         return true;
     }

@@ -66,7 +66,8 @@ const std::vector <Vector3D> &Figure3D::getPoints() const
 {
     return points;
 }
-void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r) {
+void Figure3D::toPolar(const Vector3D &point, double &theta, double &phi, double &r)
+{
     r = sqrt((point.x * point.x) + (point.y * point.y) + (point.z * point.z));
     theta = std::atan2(point.y, point.x);
     phi = std::acos(point.z / r);
@@ -570,7 +571,7 @@ void Figure3D::createCylinder(std::string name, const ini::Configuration &conf, 
     faces.emplace_back(temp);
 
     temp.pointIndexes.clear();
-    for (int i = 2*n - 1; i >= n; i--) temp.pointIndexes.emplace_back(i);
+    for (int i = n; i < 2*n ; i++) temp.pointIndexes.emplace_back(i);
     faces.emplace_back(temp);
 }
 
@@ -611,7 +612,7 @@ void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
     for (int i=0;i<=n;i++) {
         for (int j = 0; j <= m; j++) {
 
-            double u = (2*i*M_PI) / n;
+            double u = (2*(double)i*M_PI) / (double)n;
 
             double v =  ((double)2*(double)j/(double)m) - 1;
 
@@ -621,9 +622,17 @@ void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
         }
     }
 
+
     for (int i=0;i<=n;i++) {
+        if (i == n)
+        {
+            for (int j = 0; j <= m; j++) {
+                faces.emplace_back(Face(i*m + j,  i*m + (j+1)%(m+1), ((i+1)%(n+1))*m  + (j + 1)%(m+1),((i+1)%(n+1))*m + j));
+            }
+            continue;
+        }
         for (int j = 0; j <= m; j++) {
-            faces.emplace_back(Face(i*m + j, ((i+1)%n)*m + j, ((i+1)%n)*m  + (j + 1)%m, i*m + (j+1)%m));
+            faces.emplace_back(Face(i*m + j, ((i+1)%(n+1))*m + j, ((i+1)%(n+1))*m  + (j + 1)%(m+1), i*m + (j+1)%(m+1)));
         }
     }
 }
@@ -668,7 +677,72 @@ void Figure3D::createTriangles() {
 
     faces = tempFaces;
 }
-// 3DLSystem functions
+
+void Figure3D::createEuclidianKwadraticFace(std::string name, const ini::Configuration &conf)
+{
+    double def = 0;
+    double a = conf[name]["a"].as_double_or_die();
+    double b = conf[name]["b"].as_double_or_die();
+    double c = conf[name]["c"].as_double_or_die();
+    double d = conf[name]["d"].as_double_or_default(0);
+
+    int max = conf[name]["range"].as_int_or_die();
+    
+    int precision = conf[name]["precision"].as_int_or_die();
+
+    if (c != 0) {
+        for (int i = 0; i <= precision; i++) {
+            double x = ((2 * (double) i - (double) precision) / (double) precision) * max;
+            //double x = ((double)i / (double)precision) * max;
+
+            for (int j = 0; j <= precision; j++) {
+                double y = ((2 * (double) j - (double) precision) / (double) precision) * max;
+                // double y = ((double)j / (double)precision) * max;
+
+                //std::cout << x << " " << y << " " <<  (( (a*x) + (b*y) - d )*-1)/c << std::endl;
+                points.emplace_back(Vector3D::point(x, y, (((a * x) + (b * y) - d) * -1) / c));
+            }
+        }
+    }
+    if (b != 0) {
+        for (int i = 0; i <= precision; i++) {
+            double x = ((2 * (double) i - (double) precision) / (double) precision) * max;
+            //double x = ((double)i / (double)precision) * max;
+
+            for (int j = 0; j <= precision; j++) {
+                double z = ((2 * (double) j - (double) precision) / (double) precision) * max;
+                // double y = ((double)j / (double)precision) * max;
+
+                //std::cout << x << " " << y << " " <<  (( (a*x) + (b*y) - d )*-1)/c << std::endl;
+                points.emplace_back(Vector3D::point(x, ((((a * x) + (c * z) - d) * -1) / b) ,z));
+            }
+        }
+    }
+    if (a != 0) {
+        for (int i = 0; i <= precision; i++) {
+            double y = ((2 * (double) i - (double) precision) / (double) precision) * max;
+            //double x = ((double)i / (double)precision) * max;
+
+            for (int j = 0; j <= precision; j++) {
+                double z = ((2 * (double) j - (double) precision) / (double) precision) * max;
+                // double y = ((double)j / (double)precision) * max;
+
+                //std::cout << x << " " << y << " " <<  (( (a*x) + (b*y) - d )*-1)/c << std::endl;
+                points.emplace_back(Vector3D::point(((((b * y) + (c * z) - d) * -1) / a), y ,z));
+            }
+        }
+    }
+
+    int n = precision;
+    int m = precision;
+    for (int i=0;i<=n;i++) {
+        for (int j = 0; j <= m; j++) {
+            faces.emplace_back(Face(i*m + j, ((i+1)%(n+1))*m + j, ((i+1)%(n+1))*m  + (j + 1)%(m+1), i*m + (j+1)%(m+1)));
+        }
+    }
+
+}
+
 void Figure3D::create3DLSystem(std::string name, const ini::Configuration &conf)
 {
     // parse Lsystem file
@@ -802,6 +876,8 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
     else if (conf[name]["type"].as_string_or_die() == "Sphere") createSphere(name, conf, conf[name]["n"].as_int_or_die());
 
     else if (conf[name]["type"].as_string_or_die() == "Cone") createCone(name, conf);
+
+    else if (conf[name]["type"].as_string_or_die() == "EuclidianFace") createEuclidianKwadraticFace(name, conf);
 
     else if (conf[name]["type"].as_string_or_die() == "Cylinder") createCylinder(name, conf, conf[name]["height"].as_double_or_die(), conf[name]["n"].as_int_or_die());
 

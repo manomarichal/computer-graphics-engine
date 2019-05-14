@@ -89,8 +89,9 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
 
     double rangex = xmax - xmin;
     double rangey = ymax - ymin;
-    double imagex = imageSize * (rangex / std::max(rangex, rangey));
-    double imagey = imageSize * (rangey / std::max(rangex, rangey));
+
+    double imagex = shadowSize * (rangex / std::max(rangex, rangey));
+    double imagey = shadowSize * (rangey / std::max(rangex, rangey));
 
     light.d = 0.95 * (imagex / rangex);
 
@@ -98,7 +99,7 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
     light.dx = (imagex / 2) - (light.d * ((xmin + xmax) / 2));
     light.dy = (imagey / 2) - (light.d * ((ymin + ymax) / 2));
 
-    light.shadowMask = ZBuffer(imagex, imagey);
+    light.shadowMask = ZBuffer(roundToInt(imagex), roundToInt(imagey));
 
     for (auto &figure:figs) {
         for (auto &face:figure.faces) {
@@ -109,6 +110,23 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
                                                          light.d, light.dx, light.dy);
         }
     }
+    createImageZBuffer(light.shadowMask);
+
+}
+void Wireframe::createImageZBuffer(const ZBuffer &zbuffer)
+{
+    img::EasyImage img(zbuffer.xW, zbuffer.yH);
+    for (int i=0; i < zbuffer.xW;i++)
+    {
+        for (int j=0; j < zbuffer.yH;j++)
+        {
+            if (zbuffer.getZVal(i,j) == std::numeric_limits<double>::infinity()) continue;
+
+            img.operator()(i, j) = img::Color(255, 0, 0);
+        }
+    }
+    std::ofstream f_out("shadowing264_ZBUFFER.bmp");
+    f_out << img;
 }
 const img::EasyImage Wireframe::drawZBufferedTriangles()
 {
@@ -151,6 +169,8 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
 
     ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
 
+    Matrix m = Matrix::inv(Figure3D::eyePointTrans(eye));
+
     for (auto &figure:figures)
     {
         for (auto &face:figure.faces)
@@ -166,7 +186,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
                                                      figure.reflectionCoefficient, wireframeLights,
-                                                     Matrix::inv(Figure3D::eyePointTrans(eye)), applyShadows);
+                                                     m, applyShadows);
         }
     }
     return image;
@@ -208,6 +228,10 @@ void Wireframe::initLights(const ini::Configuration &conf)
                                                        conf[name]["location"].as_double_tuple_or_die()[1],
                                                        conf[name]["location"].as_double_tuple_or_die()[2]);
 
+            if (applyShadows)
+            {
+                tempLight.eye = Figure3D::eyePointTrans(tempLight.ldVector);
+            }
 
             tempLight.ldVector *= Figure3D::eyePointTrans(eye);
 
@@ -272,7 +296,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     {
         std::string name = "Figure" + std::to_string(n);
 
-        if (conf[name]["type"].as_string_or_die().substr(0, 5) != "Thick") continue;
+        if (conf[name]["type"].as_string_or_die().substr(0, 5) != "Thick" ) continue;
 
         std::vector<Figure3D> temp;
 
@@ -289,19 +313,18 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     // CREATING SHADOWMASKS
     if (applyShadows)
     {
-        for (auto &light:wireframeLights)
+        shadowSize = conf["General"]["shadowMask"].as_int_or_die();
+        for (auto &wlight:wireframeLights)
         {
-            if (light.infinity) continue;
+            if (wlight.infinity) continue;
 
             std::vector<Figure3D> figs;
-
-            light.eye = Figure3D::eyePointTrans(light.ldVector*Matrix::inv(Figure3D::eyePointTrans(eye)));
 
             for (unsigned int n = 0; n < allFigures.size(); n++)
             {
                 for (auto figure:allFigures[n])
                 {
-                    figure.applyTransformations(light.eye);
+                    figure.applyTransformations(wlight.eye);
 
                     for (Vector3D &point:figure.points)
                     {
@@ -311,7 +334,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
                     figs.emplace_back(figure);
                 }
             }
-            createLightZBuffer(figs, light);
+            createLightZBuffer(figs, wlight);
         }
     }
 
@@ -337,8 +360,8 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
                 tempLight.ambientLight.ini(conf[name]["color"].as_double_tuple_or_die());
                 figure.color = tempLight.ambientLight;
                 tempLight.amLight = true;
-                wireframeLights = {tempLight};
                 figure.ambientReflection.ini({1, 1, 1});
+                figure.lights = {tempLight};
             }
 
 
