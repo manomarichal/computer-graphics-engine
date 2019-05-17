@@ -336,6 +336,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 										Vector3D const& A,
 										Vector3D const& B,
 										Vector3D const& C,
+										Vector3D const &O,
 
 										double d,
 
@@ -410,16 +411,35 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 			// belichting en shaduw
 			std::vector<double> colorTemp = color;
 
-			for (const Light &light:lights)
+			for (Light &light:lights)
 			{
+                Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+
+                if (light.tex)
+				{
+					Vector3D ntemp = Vector3D::normalise(point - O);
+
+					double u = std::asin(n.x) / M_PI + 0.5;
+					double v = std::asin(n.y) / M_PI + 0.5;
+
+					Color tc = light.texture(
+							roundToInt(light.texture.get_width() - (1 + (light.texture.get_width() - 1) *u))%light.texture.get_width(),
+							roundToInt(light.texture.get_height() -(1 + (light.texture.get_height()-1)  *v))%light.texture.get_height());
+
+					std::vector<double> tempcolor = {( (double)tc.red) /255, ( (double)tc.green) /255, ( (double)tc.blue) /255};
+
+					light.ambientLight.ini(tempcolor);
+					light.diffuseLight.ini(tempcolor);
+					light.specularLight.ini(tempcolor);
+
+
+				}
 				if (light.amLight)
 				{
 					color[0] += light.ambientLight.red*ambientReflection[0];
 					color[1] += light.ambientLight.green*ambientReflection[1];
 					color[2] += light.ambientLight.blue*ambientReflection[2];
 				}
-
-				Vector3D point = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
 
                 if (enableShadows)
                 {
@@ -489,6 +509,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 			if (color[0] > 1) color[0] = 1;
 			if (color[1] > 1) color[1] = 1;
 			if (color[2] > 1) color[2] = 1;
+
 
             if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(color[0]*255, color[1]*255, color[2]*255);
             color = colorTemp;
@@ -571,7 +592,7 @@ void img::EasyImage::draw_zbuf_triangle_textures(ZBuffer& zBuf,
             double u = std::asin(n.x) / M_PI + 0.5;
             double v = std::asin(n.y) / M_PI + 0.5;
 
-            Color color = texture(roundToInt(1 + ( (texture.get_width() - 1) *u)), roundToInt(1 + ( (texture.get_height()-1) *v)));
+            Color color = texture(roundToInt( (1 + (texture.get_width() - 1) *u))%texture.get_width(), roundToInt(1 + ( (texture.get_height()-1) *v))%texture.get_height());
 
             if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = color;
 		}

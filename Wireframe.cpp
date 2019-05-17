@@ -186,6 +186,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      figure.points[face.pointIndexes[0]],
                                                      figure.points[face.pointIndexes[1]],
                                                      figure.points[face.pointIndexes[2]],
+                                                     figure.center,
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
                                                      figure.reflectionCoefficient, *lights,
@@ -245,10 +246,17 @@ void Wireframe::initLights(const ini::Configuration &conf)
             }
         }
 
-
+        if (conf["General"]["texture"].as_bool_or_default(false))
+        {
+            std::ifstream fin(conf[name]["filename"].as_string_or_die());
+            fin >> tempLight.texture;
+            fin.close();
+            tempLight.tex = true;
+        }
         light.emplace_back(tempLight);
 
     }
+
     wireframeLights = light;
 }
 img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light)

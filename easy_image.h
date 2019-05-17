@@ -89,30 +89,6 @@ struct Color {
 	}
 };
 
-class Light
-{
-public:
-	Color ambientLight;
-	Color diffuseLight;
-	Color specularLight;
-
-	bool difLight = false;
-	bool amLight = false;
-    bool specLight = false;
-
-
-    Vector3D ldVector;
-	bool infinity;
-
-	//shaduw
-	ZBuffer shadowMask;
-	Matrix eye;
-
-	double d;
-	double dx;
-	double dy;
-};
-
 
 inline int roundToInt(double d){
 	return static_cast<int>(std::round(d));
@@ -121,6 +97,8 @@ inline int roundToInt(double d){
 /**
  * \brief The namespace of the EasyImage class
  */
+
+class Light;
 
 namespace img
 {
@@ -335,6 +313,8 @@ namespace img
                              Vector3D const& A,
                              Vector3D const& B,
                              Vector3D const& C,
+                             Vector3D const &O,
+
 
                              double d,
 
@@ -418,4 +398,33 @@ namespace img
 	std::istream& operator>>(std::istream& in, EasyImage& image);
 
 }
+
+
+class Light
+{
+public:
+	Color ambientLight;
+	Color diffuseLight;
+	Color specularLight;
+
+	bool difLight = false;
+	bool amLight = false;
+	bool specLight = false;
+	bool tex = false;
+
+
+	Vector3D ldVector;
+	bool infinity;
+
+	//shaduw
+	ZBuffer shadowMask;
+	Matrix eye;
+
+	double d;
+	double dx;
+	double dy;
+
+	img::EasyImage texture;
+};
+
 #endif /* EASY_IMAGE_INCLUDED */
