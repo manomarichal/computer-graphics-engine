@@ -426,7 +426,6 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
                     Vector3D L = point * eyePointTrans * light.eye;
                     Vector3D lA = Vector3D::point((light.d * L.x/-L.z)+light.dx, (light.d * L.y/-L.z)+light.dy, 0);
 
-                    //std::cout << light.d << "  " << light.dx << "   " << light.dy  << std::endl;
                     double ax = lA.x - std::floor(lA.x);
                     double ay = lA.y - std::floor(lA.y);
 
@@ -440,16 +439,12 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
                     double zfinal = ay*zeinvers + (1-ay)*zfinvers;
 
-                    //std::cout << ax << "   "  << ay << "   "  << az << "  " << bz << "   "  << std::endl;
-                    //std::cout << L.z << "   "  << zeinvers << "   "  << zfinvers << "   " << zfinal << std::endl;
-                    //std::cout << std::abs(zfinal - L.z) << std::endl;
-
                     if (std::abs(zfinal - (1/L.z)) > std::pow(10, -4)) continue;
                 }
 
 				if (light.difLight)
 				{
-					double cosAlpha = -1;
+					double cosAlpha;
 					double cosBeita = -1;
 					Vector3D l;
 

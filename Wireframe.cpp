@@ -330,6 +330,8 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
                 {
                     figure.applyTransformations(wlight.eye);
 
+                    figure.createTriangles();
+                    
                     for (Vector3D &point:figure.points)
                     {
                         figure.doProjection(point, 1);
