@@ -680,7 +680,6 @@ void Figure3D::createTriangles() {
 
 void Figure3D::createEuclidianKwadraticFace(std::string name, const ini::Configuration &conf)
 {
-    double def = 0;
     double a = conf[name]["a"].as_double_or_die();
     double b = conf[name]["b"].as_double_or_die();
     double c = conf[name]["c"].as_double_or_die();

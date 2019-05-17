@@ -171,9 +171,13 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
 
     Matrix m = Matrix::inv(Figure3D::eyePointTrans(eye));
 
+
     for (auto &figure:figures)
     {
-        for (auto &face:figure.faces)
+        std::vector<Light> *lights;
+        if (wireframeLights.size() != 0) lights = &wireframeLights;
+        else lights = &figure.lights;
+            for (auto &face:figure.faces)
         {
             std::vector<double> ambient = figure.ambientReflection.asVector();
             std::vector<double> diffuse = figure.diffuseReflection.asVector();
@@ -185,7 +189,7 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
                                                      figure.points[face.pointIndexes[2]],
                                                      d, dx, dy,
                                                      ambient, diffuse, specular,
-                                                     figure.reflectionCoefficient, wireframeLights,
+                                                     figure.reflectionCoefficient, *lights,
                                                      m, applyShadows);
         }
     }
