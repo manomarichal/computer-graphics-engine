@@ -106,6 +106,8 @@ public:
 
     Figure3D()=default;
 
+    img::EasyImage texture;
+
     static void rotateAroundX(Matrix &m, const double angle);
 
     static void rotateAroundY(Matrix &m, const double angle);

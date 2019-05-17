@@ -63,6 +63,8 @@ public:
     void createImageZBuffer(const ZBuffer &zbuffer);
     img::EasyImage drawWireFrame(const ini::Configuration &conf, bool zBuffered, bool zBuffTriangle, bool light);
 
+    img::EasyImage drawTextureSphere(const ini::Configuration &conf);
+
 };
 
 

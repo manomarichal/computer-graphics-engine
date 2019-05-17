@@ -891,7 +891,6 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     else if (conf[name]["type"].as_string_or_die() == "MengerSponge") createCube(name, conf);
     else if (conf[name]["type"].as_string_or_die() == "ThickMengerSponge") createCube(name, conf);
-
     else std::cerr << "unknown figure type" << std::endl;
 
 
@@ -910,3 +909,4 @@ Figure3D::Figure3D(const std::string &name, const ini::Configuration &conf, bool
 
     applyTransformations(m);
 }
+

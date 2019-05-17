@@ -359,6 +359,20 @@ namespace img
                                     double dx,
                                     double dy);
 
+		void draw_zbuf_triangle_textures(ZBuffer& zBuf,
+														 Vector3D const& A,
+														 Vector3D const& B,
+														 Vector3D const& C,
+														 Vector3D const& O,
+
+														 double d,
+
+														 double dx,
+														 double dy,
+
+														 Matrix &eyepoint,
+														 const img::EasyImage &texture);
+
 
 
 		private:

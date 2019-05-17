@@ -37,6 +37,10 @@ img::EasyImage generate_image(const ini::Configuration &conf)
         Wireframe lines;
         return lines.drawWireFrame(conf, false, true, true);
     }
+    else if (type == "Texture") {
+        Wireframe lines;
+        return lines.drawTextureSphere(conf);
+    }
 };
 
 

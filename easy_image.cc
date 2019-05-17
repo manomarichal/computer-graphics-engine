@@ -385,7 +385,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
     double dzdx = (w.x) / (-d*k);
     double dzdy = (w.y) / (-d*k);
 
-    int xl; int xr;
+	int xl; int xr;
 
 	for (int y=ymin; y<=ymax; y++) {
         double xlab = posInf;
@@ -492,6 +492,88 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
             if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(color[0]*255, color[1]*255, color[2]*255);
             color = colorTemp;
+		}
+	}
+
+}
+
+void img::EasyImage::draw_zbuf_triangle_textures(ZBuffer& zBuf,
+										Vector3D const& A,
+										Vector3D const& B,
+										Vector3D const& C,
+										Vector3D const& O,
+
+										double d,
+
+										double dx,
+										double dy,
+
+										Matrix &eyepoint,
+										const img::EasyImage &texture) {
+
+
+
+
+	double posInf = std::numeric_limits<double>::infinity();
+	double negInf = -std::numeric_limits<double>::infinity();
+
+	Point2D a((d * A.x/-A.z) + dx, (d * A.y/-A.z) + dy);
+	Point2D b((d * B.x/-B.z) + dx, (d * B.y/-B.z) + dy);
+	Point2D c((d * C.x/-C.z) + dx, (d * C.y/-C.z) + dy);
+
+	int ymin = roundToInt(std::min(std::min(a.y, b.y), c.y)+0.5);
+	int ymax = roundToInt(std::max(std::max(a.y, b.y), c.y)-0.5);
+
+	//calculating of dzdx and dzdy
+	Vector3D u = Vector3D::vector(B.x - A.x, B.y - A.y, B.z - A.z);
+	Vector3D v = Vector3D::vector(C.x - A.x, C.y - A.y, C.z - A.z);
+
+	Vector3D w = Vector3D::vector(u.cross_equals(v));
+
+	Point2D G;
+	G.x = (a.x + b.x + c.x)/3;
+	G.y = (a.y + b.y + c.y)/3;
+
+	double zG = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
+
+	// rest
+	double k = w.x * A.x + w.y * A.y + w.z * A.z;
+
+	double dzdx = (w.x) / (-d*k);
+	double dzdy = (w.y) / (-d*k);
+
+	int xl; int xr;
+
+	for (int y=ymin; y<=ymax; y++) {
+		double xlab = posInf;
+		double xlbc = posInf;
+		double xlac = posInf;
+
+		double xrab = negInf;
+		double xrbc = negInf;
+		double xrac = negInf;
+
+		calculateXlXr(a,b,xlab, xrab,y);
+		calculateXlXr(a,c,xlac, xrac,y);
+		calculateXlXr(c,b,xlbc, xrbc,y);
+
+		xl = roundToInt(std::min(std::min(xlab, xlac), xlbc) + 0.5);
+		xr = roundToInt(std::max(std::max(xrab, xrac), xrbc) - 0.5);
+
+		for (int x = xl;x<=xr;x++) {
+
+            double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+
+            Vector3D P = Vector3D::point( (x - dx) / (d*(-zVal)), (y - dy) / (d*(-zVal)), 1/zVal);
+
+            Vector3D n = Vector3D::normalise(P - O);
+
+            double u = std::asin(n.x) / M_PI + 0.5;
+            double v = std::asin(n.y) / M_PI + 0.5;
+
+            Color color = texture(roundToInt(1 + ( (texture.get_width() - 1) *u)), roundToInt(1 + ( (texture.get_height()-1) *v)));
+
+            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = color;
 		}
 	}
 

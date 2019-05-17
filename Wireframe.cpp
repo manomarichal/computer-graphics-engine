@@ -110,7 +110,7 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
                                                          light.d, light.dx, light.dy);
         }
     }
-    createImageZBuffer(light.shadowMask);
+    //createImageZBuffer(light.shadowMask);
 
 }
 void Wireframe::createImageZBuffer(const ZBuffer &zbuffer)
@@ -156,7 +156,6 @@ const img::EasyImage Wireframe::drawZBufferedTriangles()
     imagey = imageSize * (rangey / std::max(rangex, rangey));
 
     double d = 0.95 * (imagex / rangex);
-
 
     // move line drawing
     double dx, dy;
@@ -331,7 +330,7 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
                     figure.applyTransformations(wlight.eye);
 
                     figure.createTriangles();
-                    
+
                     for (Vector3D &point:figure.points)
                     {
                         figure.doProjection(point, 1);
@@ -393,6 +392,97 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
     if(zBuffTriangle) return drawZBufferedTriangles();
 
     return drawLines2D(zBuffered);
+}
+
+img::EasyImage Wireframe::drawTextureSphere(const ini::Configuration &conf)
+{
+    // read information from configuration file
+    imageSize = conf["General"]["size"].as_int_or_die();
+    nrOfFigures = conf["General"]["nrFigures"].as_int_or_die();
+    backgroundcolor.ini(conf["General"]["backgroundcolor"].as_double_tuple_or_die());
+
+    eye = Vector3D::point(conf["General"]["eye"].as_double_tuple_or_die()[0],
+                          conf["General"]["eye"].as_double_tuple_or_die()[1],
+                          conf["General"]["eye"].as_double_tuple_or_die()[2]);
+
+    for (int k = 0; k < nrOfFigures; k++)
+    {
+        std::string name = "Figure" + std::to_string(k);
+
+        Figure3D temp(name, conf, false, false);
+
+        Matrix m = Figure3D::eyePointTrans(eye);
+
+        temp.applyTransformations(m);
+
+        temp.createTriangles();
+
+        std::ifstream fin(conf[name]["filename"].as_string_or_die());
+        fin >> temp.texture;
+        fin.close();
+
+        for (auto &point:temp.points)
+        {
+            temp.doProjection(point, 1);
+        }
+        figures.emplace_back(temp);
+    }
+
+    double xmin = INT64_MAX;
+    double xmax = INT64_MIN;
+    double ymin = INT64_MAX;
+    double ymax = INT64_MIN;
+
+    for (auto &figure:figures) {
+
+        for (auto &point:figure.points2D) {
+
+            if (point.x < xmin) xmin = point.x;
+            if (point.x > xmax) xmax = point.x;
+            if (point.y < ymin) ymin = point.y;
+            if (point.y > ymax) ymax = point.y;
+
+        }
+    }
+
+    double imagex; double imagey; double rangex; double rangey;
+
+    rangex = xmax - xmin;
+    rangey = ymax - ymin;
+    imagex = imageSize * (rangex / std::max(rangex, rangey));
+    imagey = imageSize * (rangey / std::max(rangex, rangey));
+
+    double d = 0.95 * (imagex / rangex);
+
+    // move line drawing
+    double dx, dy;
+    dx = (imagex / 2) - (d * ((xmin + xmax) / 2));
+    dy = (imagey / 2) - (d * ((ymin + ymax) / 2));
+
+    // make image and zbuffer
+    img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
+    image.clear(img::Color(backgroundcolor.red * 255, backgroundcolor.green * 255, backgroundcolor.blue * 255));
+
+    ZBuffer zBuf(roundToInt(imagex), roundToInt(imagey));
+
+    Matrix m = Figure3D::eyePointTrans(eye);
+
+    for (auto &figure:figures)
+    {
+        for (auto &face:figure.faces)
+        {
+            image.img::EasyImage::draw_zbuf_triangle_textures(zBuf,
+                                                     figure.points[face.pointIndexes[0]],
+                                                     figure.points[face.pointIndexes[1]],
+                                                     figure.points[face.pointIndexes[2]],
+                                                     figure.center*m,
+                                                     d, dx, dy, m,
+                                                     figure.texture);
+        }
+    }
+
+    std::cout << "\n";
+    return image;
 }
 
 // -------------------------------------FRACTALS-----------------------------
