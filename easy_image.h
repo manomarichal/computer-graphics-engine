@@ -94,6 +94,9 @@ inline int roundToInt(double d){
 	return static_cast<int>(std::round(d));
 }
 
+inline int roundToInt2D(double d){
+    return static_cast<int>(d);
+}
 /**
  * \brief The namespace of the EasyImage class
  */

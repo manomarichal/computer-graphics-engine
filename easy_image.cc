@@ -417,8 +417,6 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
                 if (light.tex)
 				{
-					Vector3D ntemp = Vector3D::normalise(point - O);
-
 					double u = std::asin(n.x) / M_PI + 0.5;
 					double v = std::asin(n.y) / M_PI + 0.5;
 

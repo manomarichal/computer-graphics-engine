@@ -167,13 +167,13 @@ void Figure3D::createLineDrawing(std::string name, const ini::Configuration &con
         faces.emplace_back(temp);
     }
 
-    for (Face &f:faces)
-    {
-        for(int &k:f.pointIndexes)
-        {
-            k -= 1;
-        }
-    }
+//    for (Face &f:faces)
+//    {
+//        for(int &k:f.pointIndexes)
+//        {
+//            k -= 1;
+//        }
+//    }
 }
 void Figure3D::createCube(std::string name, const ini::Configuration &conf)
 {

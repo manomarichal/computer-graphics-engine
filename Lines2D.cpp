@@ -42,13 +42,14 @@ const img::EasyImage Lines2D::drawLines2D(const listWithLines &list, int size) {
     dy = imagey / 2 - (d * ((ymin + ymax) / 2));
 
     // draw the lines
-    img::EasyImage image(roundToInt(imagex), roundToInt(imagey));
+    img::EasyImage image(roundToInt2D(imagex), roundToInt2D(imagey));
     image.clear(img::Color(backgroundcolor.red*255, backgroundcolor.green*255, backgroundcolor.blue*255));
     for (const Line2D line: list) {
-        image.draw_line(roundToInt((line.p1.x * d) + dx), roundToInt((line.p1.y * d) + dy),
-                        roundToInt((line.p2.x * d) + dx), roundToInt((line.p2.y * d) + dy),
+        image.draw_line(roundToInt2D((line.p1.x * d) + dx), roundToInt2D((line.p1.y * d) + dy),
+                        roundToInt2D((line.p2.x * d) + dx), roundToInt2D((line.p2.y * d) + dy),
                         img::Color(line.color.red*255, line.color.green*255, line.color.blue*255));
     }
+    std::cout << "\n";
     return image;
 }
 
