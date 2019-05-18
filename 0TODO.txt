@@ -1,6 +1,5 @@
 spheres_and_cilinders017
 spheres_and_cilinders051
+z_buffered_wireframes033
 
-2DL systemen round weggdoen ruben zij ok
-
-gimp 24 bit truecolor en checkmark bij colorchanges aanvinken export bmp
+diffuse light195
