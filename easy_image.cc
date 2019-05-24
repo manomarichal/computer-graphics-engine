@@ -406,7 +406,12 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
 		for (int x = xl;x<=xr;x++) {
 
-			double zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+		    double zVal;
+		    if (enableShadows)
+            {
+                zVal = zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+            }
+            zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
 			// belichting en shaduw
 			std::vector<double> colorTemp = color;
@@ -424,7 +429,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 							roundToInt(light.texture.get_width() - (1 + (light.texture.get_width() - 1) *u))%light.texture.get_width(),
 							roundToInt(light.texture.get_height() -(1 + (light.texture.get_height()-1)  *v))%light.texture.get_height());
 
-					std::vector<double> tempcolor = {( (double)tc.red) /255, ( (double)tc.green) /255, ( (double)tc.blue) /255};
+					std::vector<double> tempcolor = {( (double)tc.red) /(double)255, ( (double)tc.green) /(double)255, ( (double)tc.blue) /(double)255};
 
 					light.ambientLight.ini(tempcolor);
 					light.diffuseLight.ini(tempcolor);
@@ -457,7 +462,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
                     double zfinal = ay*zeinvers + (1-ay)*zfinvers;
 
-                    if (std::abs(zfinal - (1/L.z)) > std::pow(10, -4)) continue;
+                    if (std::abs(zfinal - (1/L.z)) > std::pow(10, -3)) continue;
                 }
 
 				if (light.difLight)
@@ -509,7 +514,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 			if (color[2] > 1) color[2] = 1;
 
 
-            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(color[0]*255, color[1]*255, color[2]*255);
+            if (zBuf.setVal(x,y,zVal)) (*this)(x, y) = Color(roundToInt(color[0]*255), roundToInt(color[1]*255), roundToInt(color[2]*255) );
             color = colorTemp;
 		}
 	}

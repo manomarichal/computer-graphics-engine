@@ -608,11 +608,12 @@ void Figure3D::createMoebius(std::string name, const ini::Configuration &conf)
     double r = conf[name]["r"].as_double_or_die();
     int n = conf[name]["n"].as_int_or_die();
     int m = conf[name]["m"].as_int_or_die();
+    int pi = conf[name]["pi"].as_int_or_default(2);
 
     for (int i=0;i<=n;i++) {
         for (int j = 0; j <= m; j++) {
 
-            double u = (2*(double)i*M_PI) / (double)n;
+            double u = (pi*(double)i*M_PI) / (double)n;
 
             double v =  ((double)2*(double)j/(double)m) - 1;
 

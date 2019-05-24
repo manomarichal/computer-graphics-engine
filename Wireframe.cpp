@@ -246,7 +246,7 @@ void Wireframe::initLights(const ini::Configuration &conf)
             }
         }
 
-        if (conf["General"]["texture"].as_bool_or_default(false))
+        if (conf[name]["texture"].as_bool_or_default(false))
         {
             std::ifstream fin(conf[name]["filename"].as_string_or_die());
             fin >> tempLight.texture;
@@ -348,6 +348,8 @@ img::EasyImage Wireframe::drawWireFrame(const ini::Configuration &conf, bool zBu
                 }
             }
             createLightZBuffer(figs, wlight);
+//            std::cout << wlight.eye << std::endl << " d = " << wlight.d << " dx = " << wlight.dx << " dy = " << wlight.dy << "\n\n";
+
         }
     }
 
@@ -700,7 +702,7 @@ std::vector<Figure3D> Wireframe::generateThiccFigure(std::string name, const ini
             Vector3D p1p2 = Vector3D::vector(point2 - point1);
             p1p2.normalise();
 
-            double theta; double phi; double rP;
+            double theta; double phi; double rP;;
             cylinder.toPolar(p1p2, theta, phi, rP);
 
             Matrix m;
