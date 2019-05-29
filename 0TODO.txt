@@ -1,5 +1,0 @@
-spheres_and_cilinders017
-spheres_and_cilinders051
-z_buffered_wireframes033
-
-diffuse light195
