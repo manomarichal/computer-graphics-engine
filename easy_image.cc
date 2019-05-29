@@ -268,9 +268,13 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		//special case for x0 == x1
 		for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
 		{
-			if (zBuf.compare(x0,i,x0,y0,x1,x1,z0,z1)) {
-				(*this)(x0, i) = color;
-			}
+            int a = std::max(y0, y1) - std::min(y0, y1);
+			double zfinal = ((double)i/a)/z0 + (1-((double)i/a))/z1;
+
+			if (zBuf.setVal(x0, i, zfinal))
+            {
+                (*this)(x0, i) = color;
+            }
 		}
 	}
 	else if (y0 == y1)
@@ -278,9 +282,17 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		//special case for y0 == y1
 		for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
 		{
-			if (zBuf.compare(i,y0,x0,y0,x1,x1,z0,z1)) {
-				(*this)(i, y0) = color;
-			}
+//			if (zBuf.compare(i,y0,x0,y0,x1,y1,z0,z1)) {
+//				(*this)(i, y0) = color;
+//			}
+
+            int a = std::max(x0, x1) - std::min(x0, x1);
+			double zfinal = ((double)i/a)/z1 + (1-((double)i/a))/z0;
+
+            if (zBuf.setVal(i, y0, zfinal))
+            {
+                (*this)(i, y0) = color;
+            }
 		}
 	}
 	else
@@ -296,27 +308,52 @@ void img::EasyImage::draw_zbuf_line(ZBuffer &zBuf, unsigned int x0, unsigned int
 		{
 			for (unsigned int i = 0; i <= (x1 - x0); i++)
 			{
-				if (zBuf.compare(x0+i, (unsigned int) round(y0 + m * i) ,x0,y0,x1,x1,z0,z1)) {
-					(*this)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
-				}
+//				if (zBuf.compare(x0+i, (unsigned int) round(y0 + m * i) ,x0,y0,x1,y1,z0,z1)) {
+//
+//				}
+
+                int a = (x1 - x0);
+				double zfinal = ((double)i/a)/z1 + (1-((double)i/a))/z0;
+
+                if (zBuf.setVal(x0 + i, (unsigned int) round(y0 + m * i), zfinal))
+                {
+                    (*this)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
+                }
 			}
 		}
 		else if (m > 1.0)
 		{
 			for (unsigned int i = 0; i <= (y1 - y0); i++)
 			{
-				if (zBuf.compare((unsigned int) round(x0 + (i / m)), y0+i ,x0,y0,x1,x1,z0,z1)) {
-					(*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
-				}
+//				if (zBuf.compare((unsigned int) round(x0 + (i / m)), y0+i ,x0,y0,x1,y1,z0,z1)) {
+//					(*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
+//				}
+
+                int a = (y1 - y0);
+				double zfinal = ((double)i/a)/z1 + (1-((double)i/a))/z0;
+
+                if (zBuf.setVal((unsigned int) round(x0 + (i / m)), y0 + i, zfinal))
+                {
+                    (*this)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
+                }
 			}
 		}
 		else if (m < -1.0)
 		{
 			for (unsigned int i = 0; i <= (y0 - y1); i++)
 			{
-				if (zBuf.compare((unsigned int) round(x0 - (i / m)),y0-i,x0,y0,x1,x1,z0,z1)) {
-					(*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
-				}
+//				if (zBuf.compare((unsigned int) round(x0 - (i / m)),y0-i,x0,y0,x1,y1,z0,z1)) {
+//					(*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
+//				}
+
+                int a = (y0 - y1);
+                double zfinal = ((double)i/a)/z1 + (1-((double)i/a))/z0;
+
+
+                if (zBuf.setVal((unsigned int) round(x0 - (i / m)), y0 - i, zfinal))
+                {
+                    (*this)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
+                }
 			}
 		}
 	}
@@ -411,7 +448,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
             {
                 zVal = zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
             }
-            zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
+            else zVal = 1.0001 * zG + (x - G.x)*dzdx + (y-G.y)*dzdy;
 
 			// belichting en shaduw
 			std::vector<double> colorTemp = color;
@@ -462,7 +499,7 @@ void img::EasyImage::draw_zbuf_triangle(ZBuffer& zBuf,
 
                     double zfinal = ay*zeinvers + (1-ay)*zfinvers;
 
-                    if (std::abs(zfinal - (1/L.z)) > std::pow(10, -3)) continue;
+                    if (std::abs(zfinal - (1/L.z)) > std::pow(10, -4)) continue;
                 }
 
 				if (light.difLight)

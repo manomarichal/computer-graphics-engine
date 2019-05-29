@@ -30,4 +30,5 @@ Ik heb verschillende voorbeelden:
 
 * Projecteren van texturen als lichtbron
 Bollen kunnen belicht worden met een textuur, wat dit doet is eigelijk per pixel de overeenkomstige texel van de textuur die de lichtbron uitzend te behandelen als zowel ambient, diffuus en speculair licht. Dit maakt het mogelijk om met schaduwen te werken, meerdere texturen op elkaar te projecteren en alleen bepaalde kleuren van de textuur te tekenen door je reflecties aan te passen.
+De ini files zijn van de vorm texture_lightXXX.ini
 

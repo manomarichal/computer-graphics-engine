@@ -110,8 +110,6 @@ void Wireframe::createLightZBuffer(std::vector<Figure3D> &figs, Light &light)
                                                          light.d, light.dx, light.dy);
         }
     }
-    //createImageZBuffer(light.shadowMask);
-
 }
 void Wireframe::createImageZBuffer(const ZBuffer &zbuffer)
 {
@@ -125,7 +123,7 @@ void Wireframe::createImageZBuffer(const ZBuffer &zbuffer)
             img.operator()(i, j) = img::Color(255, 0, 0);
         }
     }
-    std::ofstream f_out("shadowing264_ZBUFFER.bmp");
+    std::ofstream f_out("xd.bmp");
     f_out << img;
 }
 const img::EasyImage Wireframe::drawZBufferedTriangles()

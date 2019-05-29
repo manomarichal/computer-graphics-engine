@@ -27,17 +27,22 @@ bool ZBuffer::setVal(int x, int y, double val) {
         zVals.at(y*xW + x) = val;
         return true;
     }
-    else return false;
+    else {
+//        double temp = zVals.at(y*xW + x);
+        return false;
+    }
 }
 
 bool ZBuffer::compare(unsigned int x, unsigned int y, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, double zA, double zB) {
 
+    double posInf = std::numeric_limits<double>::infinity();
+
     double p;
 
     if (x0 + y0 - x1 - y1 != 0) {
-        p = (x + y - x1 - y1) / (x0 + y0 - x1 - y1);
+        p = (double)(x + y - x1 - y1) / (double)(x0 + y0 - x1 - y1);
     }
-    else p = 0;
+    else return this->setVal(x, y, 1/zA);
 
     double temp = p/zA + (1-p)/zB;
 
